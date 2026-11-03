@@ -32,6 +32,7 @@ class UserTeam
         $this->membership = $membership;
     }
 
+    public function getId(): ?int { return $this->id; }
     public function getUser(): User { return $this->user; }
     public function getTeam(): TeamCategory { return $this->team; }
     public function getMembership(): Membership { return $this->membership; }

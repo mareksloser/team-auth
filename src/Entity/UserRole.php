@@ -34,6 +34,7 @@ class UserRole
         $this->team = $team;
     }
 
+    public function getId(): ?int { return $this->id; }
     public function getUser(): User { return $this->user; }
     public function getRole(): AppRole { return $this->role; }
     public function getTeam(): ?TeamCategory { return $this->team; }
