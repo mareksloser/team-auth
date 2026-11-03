@@ -22,7 +22,7 @@ class UserRole
     #[ORM\JoinColumn(name: 'role_id', nullable: false, onDelete: 'CASCADE')]
     private AppRole $role;
 
-    /** NULL = role platí pro všechny týmy */
+    /** NULL = role applies to all teams */
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'team_id', nullable: true, onDelete: 'CASCADE')]
     private ?TeamCategory $team;
@@ -39,7 +39,7 @@ class UserRole
     public function getRole(): AppRole { return $this->role; }
     public function getTeam(): ?TeamCategory { return $this->team; }
 
-    /** Tvar v tokenu: "coach" nebo "coach@u11" */
+    /** Token format: "coach" or "coach@u11" */
     public function toClaim(): string
     {
         return null === $this->team ? $this->role->getSlug() : $this->role->getSlug().'@'.$this->team->getSlug();

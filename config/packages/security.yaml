@@ -4,10 +4,10 @@ security:
             algorithm: argon2id
 
     providers:
-        # přihlašovací formulář
+        # login form
         users_by_email:
             entity: { class: App\Entity\User, property: email }
-        # tokeny nesou `sub` = uuid uživatele
+        # tokens carry `sub` = user uuid
         users_by_uuid:
             entity: { class: App\Entity\User, property: uuid }
 
@@ -41,7 +41,7 @@ security:
                 max_attempts: 5
                 interval: '15 minutes'
             logout:
-                path: app_logout   # odpověď nastavuje App\EventListener\OidcLogoutListener
+                path: app_logout   # response is set by App\EventListener\OidcLogoutListener
 
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }

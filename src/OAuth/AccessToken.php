@@ -12,7 +12,7 @@ use League\OAuth2\Server\Entities\Traits\TokenEntityTrait;
 
 /**
  * Access token s claimy iss, kid, roles, teams…
- * Přepisuje serializaci z AccessTokenTrait (toString() v league v9, __toString() v v8).
+ * Overrides serialization from AccessTokenTrait (toString() in league v9, __toString() in v8).
  */
 final class AccessToken implements AccessTokenEntityInterface
 {

@@ -118,7 +118,7 @@ final class ClientController extends AdminController
         return $this->handle($request, fn () => $this->admin->delete($this->client($identifier), $this->actor()), 'Aplikace smazána.', 'admin_clients');
     }
 
-    /** client_id "_global" = globální role */
+    /** client_id "_global" = global role */
     #[Route('/{identifier}/roles', name: 'admin_client_role_add', methods: ['POST'])]
     public function addRole(string $identifier, Request $request): Response
     {

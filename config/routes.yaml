@@ -5,7 +5,7 @@ controllers:
     type: attribute
 
 # /oauth/authorize a /oauth/token z bundlu.
-# Starší verze bundlu mají routes.xml – zkontroluj vendor/league/oauth2-server-bundle/config/
+# Older bundle versions ship routes.xml – check vendor/league/oauth2-server-bundle/config/
 oauth2:
     resource: '@LeagueOAuth2ServerBundle/config/routes.php'
     type: php

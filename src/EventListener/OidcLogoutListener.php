@@ -13,7 +13,7 @@ use Symfony\Component\Security\Http\Event\LogoutEvent;
 
 /**
  * OIDC RP-initiated logout: /logout?client_id=…&post_logout_redirect_uri=…&state=…
- * Přesměruje jen na origin, který má klient mezi redirect URI.
+ * Redirects only to an origin that is among the client's redirect URIs.
  */
 #[AsEventListener(event: LogoutEvent::class)]
 final class OidcLogoutListener
@@ -70,7 +70,7 @@ final class OidcLogoutListener
         return strtolower($p['scheme'].'://'.$p['host'].(isset($p['port']) ? ':'.$p['port'] : ''));
     }
 
-    /** Jen pro zjištění klienta – bezpečnost zajišťuje kontrola originu proti redirect URI. */
+    /** Only used to identify the client – security comes from checking the origin against redirect URIs. */
     private function audienceFromIdTokenHint(Request $request): ?string
     {
         $parts = explode('.', (string) $request->query->get('id_token_hint', ''));

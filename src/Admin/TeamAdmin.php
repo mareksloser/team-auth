@@ -24,7 +24,7 @@ final class TeamAdmin
         return $this->em->getRepository(TeamCategory::class)->findBy([], ['name' => 'ASC']);
     }
 
-    /** @return array<int, int> team id => počet členů */
+    /** @return array<int, int> team id => member count */
     public function memberCounts(): array
     {
         $rows = $this->em->createQueryBuilder()
@@ -61,7 +61,7 @@ final class TeamAdmin
         $this->audit->log('admin.team_rename', $actor->getUuid(), null, ['team' => $team->getSlug()]);
     }
 
-    /** Smaže i členství a role omezené na tento tým (ON DELETE CASCADE). */
+    /** Also deletes memberships and roles scoped to this team (ON DELETE CASCADE). */
     public function delete(TeamCategory $team, User $actor): void
     {
         $slug = $team->getSlug();

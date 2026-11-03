@@ -6,7 +6,7 @@ namespace App\OAuth;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-/** Veřejný klíč jako JWK pro /.well-known/jwks.json; `kid` = RFC 7638 thumbprint. */
+/** Public key as JWK for /.well-known/jwks.json; `kid` = RFC 7638 thumbprint. */
 final class KeySet
 {
     /** @var array<string, string>|null */

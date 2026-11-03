@@ -8,10 +8,10 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 
 /**
- * Jediné místo, kde se skládají claimy. Používá ho access token, id_token i /userinfo.
+ * The single place where claims are built. Used by the access token, id_token and /userinfo.
  *
- * roles        – role uživatele v aplikaci, pro kterou je token vydán ("coach", "coach@u11")
- * global_roles – role napříč aplikacemi ("superadmin")
+ * roles        – user roles in the application the token was issued for ("coach", "coach@u11")
+ * global_roles – roles across all applications ("superadmin")
  * teams        – [{slug, name, membership}]
  */
 final class ClaimsProvider
@@ -23,7 +23,7 @@ final class ClaimsProvider
     /**
      * @param string[] $scopes
      *
-     * @return array<string, mixed>|null null = uživatel neexistuje nebo je deaktivovaný
+     * @return array<string, mixed>|null null = user does not exist or is deactivated
      */
     public function forSubject(string $sub, ?string $clientId, array $scopes): ?array
     {

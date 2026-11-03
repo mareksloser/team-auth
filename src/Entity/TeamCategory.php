@@ -13,7 +13,7 @@ class TeamCategory
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
 
-    /** Např. a-tym, u19, u11 – objevuje se v tokenech, neměnit. */
+    /** E.g. a-tym, u19, u11 – appears in tokens, do not change. */
     #[ORM\Column(length: 50, unique: true)]
     private string $slug;
 

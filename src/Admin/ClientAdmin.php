@@ -19,8 +19,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
 /**
- * Správa OAuth klientů (aplikací) a katalogu jejich rolí.
- * Secret se ukládá hashovaný stejně jako v league:oauth2-server:create-client a v čitelné podobě se ukáže jen jednou.
+ * Manages OAuth clients (applications) and their role catalogue.
+ * Secrets are stored hashed, same as league:oauth2-server:create-client, and shown in plain text only once.
  */
 final class ClientAdmin
 {
@@ -65,7 +65,7 @@ final class ClientAdmin
      * @param string[] $grants
      * @param string[] $scopes
      *
-     * @return array{0: ClientInterface, 1: ?string} klient a čitelný secret (jen u důvěrného)
+     * @return array{0: ClientInterface, 1: ?string} client and plain secret (confidential clients only)
      */
     public function create(string $name, string $identifier, bool $confidential, string $redirectUris, array $grants, array $scopes, User $actor): array
     {
@@ -116,7 +116,7 @@ final class ClientAdmin
     {
         $identifier = $client->getIdentifier();
         foreach ($this->roles($identifier) as $role) {
-            $this->em->remove($role); // přiřazení rolí zmizí přes ON DELETE CASCADE
+            $this->em->remove($role); // role assignments are removed via ON DELETE CASCADE
         }
         $this->em->flush();
         $this->clients->remove($client);
@@ -129,7 +129,7 @@ final class ClientAdmin
         return $this->em->getRepository(AppRole::class)->findBy(['clientId' => $clientId], ['slug' => 'ASC']);
     }
 
-    /** @return AppRole[] všechny role (globální první) – pro výběr při přidělování */
+    /** @return AppRole[] all roles (global first) – for the grant select */
     public function allRoles(): array
     {
         $roles = $this->em->getRepository(AppRole::class)->findAll();

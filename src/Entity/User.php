@@ -19,7 +19,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
 
-    /** Veřejný identifikátor = claim `sub`. Nikdy se nemění. */
+    /** Public identifier = `sub` claim. Never changes. */
     #[ORM\Column(length: 36, unique: true)]
     private string $uuid;
 
@@ -88,7 +88,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = $hash;
     }
 
-    /** Role pro samotné IdP (admin). Role aplikací jdou do tokenu jako claim `roles`. */
+    /** Roles for the IdP itself (admin). App roles go into the token as the `roles` claim. */
     public function getRoles(): array
     {
         $roles = ['ROLE_USER'];

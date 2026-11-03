@@ -1,6 +1,6 @@
 {% macro csrf() %}<input type="hidden" name="_token" value="{{ csrf_token('admin') }}">{% endmacro %}
 
-{# Tlačítko jako POST formulář s potvrzením #}
+{# Button rendered as a POST form with confirmation #}
 {% macro post_button(url, label, confirm = null, class = 'btn secondary small') %}
     <form class="inline" method="post" action="{{ url }}"{% if confirm %} onsubmit="return confirm('{{ confirm|e('js') }}')"{% endif %}>
         <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">

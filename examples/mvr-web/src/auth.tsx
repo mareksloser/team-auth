@@ -1,9 +1,9 @@
-// React SPA (např. MVR) – npm i oidc-client-ts react-oidc-context
+// React SPA (e.g. MVR) – npm i oidc-client-ts react-oidc-context
 import { WebStorageStateStore } from 'oidc-client-ts'
 import { AuthProvider, useAuth, type AuthProviderProps } from 'react-oidc-context'
 import type { ReactNode } from 'react'
 
-const authority = import.meta.env.VITE_OIDC_ISSUER // https://auth.klub.test (bez lomítka)
+const authority = import.meta.env.VITE_OIDC_ISSUER // https://auth.klub.test (no trailing slash)
 
 export const oidcConfig: AuthProviderProps = {
   authority,
@@ -11,9 +11,9 @@ export const oidcConfig: AuthProviderProps = {
   redirect_uri: `${window.location.origin}/auth/callback`,
   post_logout_redirect_uri: window.location.origin,
   scope: 'openid profile email roles teams offline_access',
-  response_type: 'code', // PKCE (S256) řeší knihovna sama
+  response_type: 'code', // PKCE (S256) is handled by the library
   userStore: new WebStorageStateStore({ store: window.sessionStorage }),
-  automaticSilentRenew: true, // obnova přes refresh_token
+  automaticSilentRenew: true, // renew via refresh_token
   onSigninCallback: () => {
     window.history.replaceState({}, document.title, window.location.pathname)
   },
@@ -31,7 +31,7 @@ type ClubProfile = {
   teams?: { slug: string; name: string; membership: string }[]
 }
 
-/** Stejná logika jako ClubUser::hasRole na backendu. */
+/** Same logic as ClubUser::hasRole on the backend. */
 export function useClubUser() {
   const auth = useAuth()
   const profile = auth.user?.profile as ClubProfile | undefined
@@ -54,7 +54,7 @@ export function useClubUser() {
   }
 }
 
-/** fetch na vlastní API s Bearer tokenem */
+/** fetch against your own API with a Bearer token */
 export async function apiFetch(token: string | undefined, input: string, init: RequestInit = {}) {
   const headers = new Headers(init.headers)
   if (token) headers.set('Authorization', `Bearer ${token}`)

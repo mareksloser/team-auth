@@ -26,7 +26,7 @@ final class LoginAuditSubscriber implements EventSubscriberInterface
 
     public function onSuccess(LoginSuccessEvent $event): void
     {
-        // jen interaktivní přihlášení, ne každý request s bearer tokenem
+        // interactive logins only, not every bearer-token request
         if ('main' !== $event->getFirewallName()) {
             return;
         }

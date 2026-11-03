@@ -8,7 +8,7 @@ use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\AttributesBasedUserProviderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-/** Symfony OIDC token handler sem předá všechny claimy jako $attributes. */
+/** The Symfony OIDC token handler passes all claims here as $attributes. */
 final class ClubUserProvider implements AttributesBasedUserProviderInterface
 {
     public function loadUserByIdentifier(string $identifier, array $attributes = []): UserInterface
@@ -18,7 +18,7 @@ final class ClubUserProvider implements AttributesBasedUserProviderInterface
 
     public function refreshUser(UserInterface $user): UserInterface
     {
-        throw new UnsupportedUserException('Stateless firewall – refresh se nepoužívá.');
+        throw new UnsupportedUserException('Stateless firewall – refresh is not used.');
     }
 
     public function supportsClass(string $class): bool

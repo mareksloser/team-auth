@@ -9,10 +9,10 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 use League\OAuth2\Server\CryptKeyInterface;
 
-/** Podepisování RS256 tokenů (access token i id_token) se stejným klíčem a `kid`. */
+/** Signs RS256 tokens (access token and id_token) with the same key and `kid`. */
 final class Jwt
 {
-    /** @param array<string, mixed> $claims vlastní (neregistrované) claimy */
+    /** @param array<string, mixed> $claims custom (non-registered) claims */
     public static function sign(
         CryptKeyInterface $key,
         ?string $keyId,

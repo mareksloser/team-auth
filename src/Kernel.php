@@ -17,8 +17,8 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 
 /**
- * Napojení OIDC vrstvy na league/oauth2-server-bundle.
- * Služby hledáme podle třídy, ne podle ID, aby to přežilo změny ID mezi verzemi bundlu.
+ * Wires the OIDC layer into league/oauth2-server-bundle.
+ * Services are located by class rather than by ID so this survives ID changes between bundle versions.
  */
 class Kernel extends BaseKernel implements CompilerPassInterface
 {
@@ -33,7 +33,7 @@ class Kernel extends BaseKernel implements CompilerPassInterface
             match ($definition->getClass()) {
                 BundleAccessTokenRepository::class => $bundleRepositoryId = $id,
                 AuthorizationServer::class => $authorizationServer = $definition,
-                // sub v tokenech = UUID uživatele, ne e-mail
+                // token `sub` = user UUID, not e-mail
                 BundleUserConverter::class => $definition->setClass(UserConverter::class),
                 default => null,
             };
@@ -43,12 +43,12 @@ class Kernel extends BaseKernel implements CompilerPassInterface
             throw new \LogicException('Nenalezen AuthorizationServer nebo AccessTokenRepository z league/oauth2-server-bundle.');
         }
 
-        // Náš repozitář vydává JWT s claimy roles/teams a deleguje ukládání na původní.
+        // Our repository issues JWTs with roles/teams claims and delegates persistence to the original one.
         $container->getDefinition(AccessTokenRepository::class)
             ->setArgument('$inner', new Reference($bundleRepositoryId));
 
         $authorizationServer->replaceArgument(1, new Reference(AccessTokenRepository::class));
-        // 6. argument konstruktoru = ResponseTypeInterface → přidá id_token
+        // 6th constructor argument = ResponseTypeInterface → adds id_token
         $authorizationServer->setArgument(5, new Reference(IdTokenResponse::class));
     }
 }

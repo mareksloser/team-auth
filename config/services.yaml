@@ -18,4 +18,4 @@ services:
             - '../src/OAuth/AccessToken.php'
             - '../src/OAuth/Jwt.php'
 
-    # $inner (původní repozitář bundlu) doplňuje App\Kernel::process()
+    # $inner (the bundle's original repository) is injected by App\Kernel::process()

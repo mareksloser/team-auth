@@ -12,8 +12,8 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 /**
- * Všechny aplikace jsou klubové (first-party) → souhlasovou obrazovku přeskakujeme.
- * Přihlášení vynutí access_control na /oauth/authorize, po loginu se uživatel vrátí sem.
+ * All apps are first-party club apps → the consent screen is skipped.
+ * Login is enforced by access_control on /oauth/authorize; after login the user returns here.
  */
 #[AsEventListener(event: OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE)]
 final class AuthorizationRequestListener

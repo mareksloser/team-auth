@@ -1,4 +1,4 @@
-# Backend aplikace (např. MVR API) – ověřuje access token z klubového IdP.
+# Application backend (e.g. MVR API) – validates access tokens from the club IdP.
 # composer require symfony/security-bundle symfony/http-client web-token/jwt-library
 security:
     providers:
@@ -14,16 +14,16 @@ security:
                 token_handler:
                     oidc:
                         claim: sub
-                        audience: 'mvr-web'          # client_id SPA, pro kterou byl token vydán
+                        audience: 'mvr-web'          # client_id of the SPA the token was issued for
                         issuers: ['%env(OIDC_ISSUER)%']
                         algorithms: ['RS256']
-                        # Symfony 7.3+: klíče z discovery (lomítko na konci je nutné)
+                        # Symfony 7.3+: keys from discovery (trailing slash required)
                         discovery:
                             base_uri: '%env(OIDC_ISSUER)%/'
                             cache:
                                 id: cache.app
-                        # Starší Symfony: místo discovery
-                        # keyset: '%env(OIDC_JWKS)%'   # obsah /.well-known/jwks.json
+                        # Older Symfony: instead of discovery
+                        # keyset: '%env(OIDC_JWKS)%'   # contents of /.well-known/jwks.json
 
     access_control:
         - { path: ^/api/public, roles: PUBLIC_ACCESS }

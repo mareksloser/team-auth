@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/** Společný základ: CSRF kontrola, aktuální admin, převod AdminException na flash zprávu. */
+/** Common base: CSRF check, current admin, AdminException → flash message. */
 #[IsGranted('ROLE_SUPERADMIN')]
 abstract class AdminController extends AbstractController
 {
@@ -35,7 +35,7 @@ abstract class AdminController extends AbstractController
     }
 
     /**
-     * Provede akci a přesměruje; chybu vstupu zobrazí jako flash.
+     * Runs the action and redirects; input errors are shown as a flash message.
      *
      * @param callable(): void $action
      */

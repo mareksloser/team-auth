@@ -7,8 +7,8 @@ namespace App\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * Uživatel sestavený čistě z claimů tokenu – aplikace nemusí mít vlastní tabulku uživatelů.
- * Pro FK (např. player_marker_views.user_id) ukládej `sub` (UUID) jako CHAR(36).
+ * User built purely from token claims – the app does not need its own users table.
+ * For foreign keys (e.g. player_marker_views.user_id) store `sub` (UUID) as CHAR(36).
  */
 final class ClubUser implements UserInterface
 {
@@ -45,7 +45,7 @@ final class ClubUser implements UserInterface
         return $this->sub;
     }
 
-    /** "coach@u11" → ROLE_COACH (tým kontroluj přes hasRole / voter) */
+    /** "coach@u11" → ROLE_COACH (check the team via hasRole / a voter) */
     public function getRoles(): array
     {
         $roles = ['ROLE_USER'];
@@ -61,7 +61,7 @@ final class ClubUser implements UserInterface
         if (\in_array('superadmin', $this->globalRoles, true)) {
             return true;
         }
-        // role bez týmu platí pro všechny týmy
+        // a role without a team applies to all teams
         if (\in_array($role, $this->roles, true)) {
             return true;
         }
@@ -69,7 +69,7 @@ final class ClubUser implements UserInterface
         return null !== $team && \in_array($role.'@'.$team, $this->roles, true);
     }
 
-    /** @return string[] slugy týmů, kde má uživatel danou roli (pro filtrování dotazů) */
+    /** @return string[] team slugs where the user has the given role (for query filtering) */
     public function teamsWithRole(string $role): array
     {
         $teams = [];

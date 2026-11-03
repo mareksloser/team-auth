@@ -7,7 +7,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Role patří buď konkrétní aplikaci (client_id), nebo je globální (client_id = NULL, např. superadmin).
+ * A role belongs either to a specific application (client_id) or is global (client_id = NULL, e.g. superadmin).
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'app_roles')]

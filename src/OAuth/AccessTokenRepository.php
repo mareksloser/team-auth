@@ -11,12 +11,12 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 
 /**
- * Dekorátor repozitáře z bundlu: vytváří náš AccessToken (s claimy),
- * ukládání a revokaci nechává na původní implementaci. $inner nastavuje App\Kernel::process().
+ * Decorates the bundle's repository: creates our AccessToken (with claims) and leaves
+ * persistence and revocation to the original implementation. $inner is set in App\Kernel::process().
  */
 final class AccessTokenRepository implements AccessTokenRepositoryInterface
 {
-    /** Claimy, které jdou i do access tokenu (API je tak nemusí dotahovat z /userinfo). */
+    /** Claims also included in the access token (so APIs don't need to call /userinfo). */
     private const ACCESS_TOKEN_CLAIMS = ['name', 'email', 'roles', 'global_roles', 'teams'];
 
     public function __construct(
@@ -46,7 +46,7 @@ final class AccessTokenRepository implements AccessTokenRepositoryInterface
             $scopeIds = array_map(static fn (ScopeEntityInterface $s): string => $s->getIdentifier(), $scopes);
             $all = $this->claims->forSubject((string) $userIdentifier, $clientEntity->getIdentifier(), $scopeIds);
             if (null === $all) {
-                // deaktivovaný uživatel nedostane token ani přes refresh_token
+                // a deactivated user gets no token, not even via refresh_token
                 throw OAuthServerException::accessDenied('Účet neexistuje nebo je deaktivovaný.');
             }
             $claims = array_intersect_key($all, array_flip(self::ACCESS_TOKEN_CLAIMS));

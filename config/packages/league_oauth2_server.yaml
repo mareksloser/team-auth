@@ -15,7 +15,7 @@ league_oauth2_server:
         enable_password_grant: false
         enable_implicit_grant: false
 
-        # SPA (public klienti) musí posílat PKCE
+        # SPAs (public clients) must send PKCE
         require_code_challenge_for_public_clients: true
         persist_access_token: true
 

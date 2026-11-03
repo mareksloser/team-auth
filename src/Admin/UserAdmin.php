@@ -15,7 +15,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-/** Operace nad uživateli z adminu. Kontroler jen předává data a zobrazuje výsledek. */
+/** User operations for the admin. Controllers only pass input in and render the result. */
 final class UserAdmin
 {
     public const MIN_PASSWORD_LENGTH = 10;

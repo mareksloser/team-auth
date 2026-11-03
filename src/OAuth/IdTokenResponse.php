@@ -8,7 +8,7 @@ use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\ResponseTypes\BearerTokenResponse;
 
-/** Přidá do odpovědi /oauth/token `id_token`, pokud klient žádal scope `openid`. */
+/** Adds `id_token` to the /oauth/token response when the client requested the `openid` scope. */
 final class IdTokenResponse extends BearerTokenResponse
 {
     public function __construct(
