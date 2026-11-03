@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\OAuth;
 
 use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Encoding\ChainedFormatter;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 use League\OAuth2\Server\CryptKeyInterface;
@@ -30,7 +31,9 @@ final class Jwt
         );
 
         $now = new \DateTimeImmutable();
-        $builder = $config->builder()
+        // Integer iat/nbf/exp: the default formatter emits microseconds (e.g. 1793736265.301978),
+        // which RFC 7519 allows but many resource servers reject.
+        $builder = $config->builder(ChainedFormatter::withUnixTimestampDates())
             ->issuedBy($issuer)
             ->permittedFor($audience)
             ->relatedTo($subject)
