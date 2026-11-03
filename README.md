@@ -102,7 +102,20 @@ Only users with the global `superadmin` role have access.
   the application's role catalogue, secret regeneration (shown only once), delete; global roles
 - **Audit** – logins, application sign-ins and every change made in the admin
 
-Business logic lives in `App\Admin\UserAdmin`, `TeamAdmin` and `ClientAdmin` (testable without HTTP);
+### Login page branding
+
+Each application can have its own logo (PNG, JPEG, WebP or SVG, max. 512 kB), accent colour and
+page background (*Aplikace → detail → Vzhled přihlášení*, with a live preview). When a user arrives
+from that application's `/oauth/authorize`, the login page shows its logo and name and uses its
+colours; the text colour on buttons is picked automatically for contrast. Without a known client
+(e.g. opening `/login` directly) the default look is used.
+
+Logos are stored in `var/branding/` (must be writable; include it in backups) and served from
+`/branding/{client_id}/logo` with a content-hash URL, so browsers cache them for a year.
+The file type is detected from the content, and SVGs are served with a sandboxing CSP.
+
+Business logic lives in `App\Admin\UserAdmin`, `TeamAdmin`, `ClientAdmin` and `App\Branding\BrandingService`
+(testable without HTTP; `Branding\Color` and `Branding\LogoType` are pure);
 controllers only pass input in and render results. All changes go through POST with a CSRF token.
 
 ## How it fits together

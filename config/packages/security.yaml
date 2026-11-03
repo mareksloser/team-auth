@@ -17,7 +17,7 @@ security:
             security: false
 
         oidc_public:
-            pattern: ^/(\.well-known/|oauth/token)
+            pattern: ^/(\.well-known/|oauth/token|branding/)
             security: false
 
         userinfo:

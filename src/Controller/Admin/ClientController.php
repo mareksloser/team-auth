@@ -6,10 +6,12 @@ namespace App\Controller\Admin;
 
 use App\Admin\AdminException;
 use App\Admin\ClientAdmin;
+use App\Branding\BrandingService;
 use App\Entity\AppRole;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\ClientInterface;
 use League\Bundle\OAuth2ServerBundle\OAuth2Grants;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -21,6 +23,7 @@ final class ClientController extends AdminController
     public function __construct(
         private readonly ClientAdmin $admin,
         private readonly EntityManagerInterface $em,
+        private readonly BrandingService $branding,
     ) {
     }
 
@@ -93,8 +96,13 @@ final class ClientController extends AdminController
             }
         }
 
+        $brand = $this->branding->find($identifier);
+
         return $this->render('admin/clients/form.html.twig', $this->formView($client, $form) + [
             'roles' => $this->admin->roles($identifier),
+            'brand' => $brand,
+            'brandVars' => BrandingService::cssVariables($brand),
+            'maxLogoKb' => BrandingService::MAX_LOGO_BYTES / 1024,
         ]);
     }
 
@@ -110,6 +118,42 @@ final class ClientController extends AdminController
 
             return $this->redirectToRoute('admin_client_edit', ['identifier' => $identifier]);
         }
+    }
+
+    #[Route('/{identifier}/branding', name: 'admin_client_branding', methods: ['POST'])]
+    public function brandingColors(string $identifier, Request $request): Response
+    {
+        $client = $this->client($identifier);
+
+        return $this->handle($request, fn () => $this->branding->updateColors(
+            $client->getIdentifier(),
+            (string) $request->request->get('accent_color'),
+            (string) $request->request->get('background_color'),
+            $this->actor(),
+        ), 'Barvy uloženy.', 'admin_client_edit', ['identifier' => $identifier]);
+    }
+
+    #[Route('/{identifier}/branding/logo', name: 'admin_client_logo', methods: ['POST'])]
+    public function logoUpload(string $identifier, Request $request): Response
+    {
+        $client = $this->client($identifier);
+
+        return $this->handle($request, function () use ($client, $request): void {
+            $file = $request->files->get('logo');
+            if (!$file instanceof UploadedFile || !$file->isValid()) {
+                throw new AdminException($file instanceof UploadedFile ? 'Nahrání selhalo: '.$file->getErrorMessage() : 'Vyber soubor s logem.');
+            }
+            $this->branding->uploadLogo($client->getIdentifier(), (string) file_get_contents($file->getPathname()), $this->actor());
+        }, 'Logo nahráno.', 'admin_client_edit', ['identifier' => $identifier]);
+    }
+
+    #[Route('/{identifier}/branding/logo/remove', name: 'admin_client_logo_remove', methods: ['POST'])]
+    public function logoRemove(string $identifier, Request $request): Response
+    {
+        $client = $this->client($identifier);
+
+        return $this->handle($request, fn () => $this->branding->removeLogo($client->getIdentifier(), $this->actor()),
+            'Logo odebráno.', 'admin_client_edit', ['identifier' => $identifier]);
     }
 
     #[Route('/{identifier}/delete', name: 'admin_client_delete', methods: ['POST'])]

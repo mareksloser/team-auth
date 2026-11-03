@@ -1,10 +1,18 @@
 {% extends 'security/layout.html.twig' %}
 
-{% block title %}Přihlášení – Klubový účet{% endblock %}
+{% block title %}Přihlášení – {{ client ? client.name : 'Klubový účet' }}{% endblock %}
 
 {% block body %}
-    <h1>Klubový účet</h1>
-    <p class="muted">Jedno přihlášení pro všechny klubové aplikace.</p>
+    {% if brand and brand.hasLogo %}
+        <img class="logo" src="{{ path('branding_logo', {clientId: client.identifier, v: brand.logoFile}) }}" alt="{{ client.name }}">
+    {% endif %}
+    {% if client %}
+        <h1>Přihlášení do {{ client.name }}</h1>
+        <p class="muted">Přihlas se svým klubovým účtem.</p>
+    {% else %}
+        <h1>Klubový účet</h1>
+        <p class="muted">Jedno přihlášení pro všechny klubové aplikace.</p>
+    {% endif %}
 
     {% if app.request.query.get('logged_out') %}
         <p class="muted">Byl(a) jsi odhlášen(a).</p>
@@ -24,4 +32,8 @@
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
         <button type="submit">Přihlásit se</button>
     </form>
+{% endblock %}
+
+{% block footer %}
+    {% if client %}<footer>Klubový účet · jedno přihlášení pro všechny klubové aplikace</footer>{% endif %}
 {% endblock %}

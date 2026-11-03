@@ -12,6 +12,9 @@
         * { box-sizing: border-box; }
         body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg); color:var(--text);
                font:16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; padding:1rem; }
+        .wrap { width:100%; max-width:380px; display:grid; gap:.9rem; justify-items:center; }
+        .logo { display:block; max-width:180px; max-height:96px; margin:0 auto 1.25rem; object-fit:contain; }
+        footer { font-size:.8rem; color:var(--bg-ink, var(--muted)); opacity:.75; }
         .card { width:100%; max-width:380px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:2rem; }
         h1 { font-size:1.35rem; margin:0 0 .25rem; }
         p.muted { color:var(--muted); margin:0 0 1.5rem; font-size:.95rem; }
@@ -19,12 +22,19 @@
         input { width:100%; padding:.7rem .8rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:inherit; font:inherit; }
         input:focus { outline:2px solid var(--accent); outline-offset:1px; }
         button, .btn { display:block; width:100%; margin-top:1.5rem; padding:.75rem; border:0; border-radius:8px; background:var(--accent);
-                       color:var(--card); font:600 1rem system-ui, sans-serif; cursor:pointer; text-align:center; text-decoration:none; }
+                       color:var(--accent-ink, var(--card)); font:600 1rem system-ui, sans-serif; cursor:pointer; text-align:center; text-decoration:none; }
         .error { background:color-mix(in srgb, var(--error) 12%, transparent); color:var(--error); padding:.7rem .8rem; border-radius:8px; font-size:.9rem; }
         ul { padding-left:1.1rem; } code { font-size:.85rem; }
     </style>
+    {#- Per-application branding (validated hex colours only) overrides the theme in both light and dark mode. #}
+    {% if brandVars is defined and brandVars is not empty %}
+        <style>:root { {% for name, value in brandVars %}{{ name }}: {{ value }}; {% endfor %}}</style>
+    {% endif %}
 </head>
 <body>
-<main class="card">{% block body %}{% endblock %}</main>
+<div class="wrap">
+    <main class="card">{% block body %}{% endblock %}</main>
+    {% block footer %}{% endblock %}
+</div>
 </body>
 </html>

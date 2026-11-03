@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin;
 
 use App\Audit\AuditLogger;
+use App\Branding\BrandingService;
 use App\Entity\AppRole;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +38,7 @@ final class ClientAdmin
         #[Autowire(service: 'league.oauth2_server.password_hasher')]
         private readonly PasswordHasherInterface $secretHasher,
         private readonly AuditLogger $audit,
+        private readonly BrandingService $branding,
         private readonly array $supportedScopes,
     ) {
     }
@@ -119,6 +121,7 @@ final class ClientAdmin
             $this->em->remove($role); // role assignments are removed via ON DELETE CASCADE
         }
         $this->em->flush();
+        $this->branding->delete($identifier);
         $this->clients->remove($client);
         $this->audit->log('admin.client_delete', $actor->getUuid(), $identifier);
     }
