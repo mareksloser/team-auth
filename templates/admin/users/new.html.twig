@@ -1,0 +1,18 @@
+{% extends 'admin/layout.html.twig' %}
+{% import 'admin/_macros.html.twig' as m %}
+{% block title %}Nový uživatel{% endblock %}
+{% block body %}
+    <h1>Nový uživatel</h1>
+    <form method="post" class="card" style="max-width:520px">
+        {{ m.csrf() }}
+        <div class="field"><label for="name">Jméno a příjmení</label><input type="text" id="name" name="name" value="{{ data.name }}" required maxlength="120"></div>
+        <div class="field"><label for="email">E-mail</label><input type="email" id="email" name="email" value="{{ data.email }}" required autocomplete="off"></div>
+        <div class="field">
+            <label for="password">Počáteční heslo</label>
+            <input type="password" id="password" name="password" required minlength="{{ minPassword }}" autocomplete="new-password">
+            <div class="hint">Alespoň {{ minPassword }} znaků. Předej ho uživateli bezpečně (osobně, SMS), ne e-mailem s loginem.</div>
+        </div>
+        <button class="btn" type="submit">Vytvořit</button>
+        <a class="btn secondary" href="{{ path('admin_users') }}">Zpět</a>
+    </form>
+{% endblock %}

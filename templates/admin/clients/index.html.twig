@@ -1,0 +1,50 @@
+{% extends 'admin/layout.html.twig' %}
+{% import 'admin/_macros.html.twig' as m %}
+{% block title %}Aplikace{% endblock %}
+{% block body %}
+    <h1>Aplikace <span class="actions"><a class="btn" href="{{ path('admin_client_new') }}">+ Nová aplikace</a></span></h1>
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Název</th><th>client_id</th><th>Typ</th><th class="num">Rolí</th><th>Stav</th></tr></thead>
+                <tbody>
+                {% for c in clients %}
+                    <tr>
+                        <td><a href="{{ path('admin_client_edit', {identifier: c.identifier}) }}">{{ c.name }}</a></td>
+                        <td><code>{{ c.identifier }}</code></td>
+                        <td>{{ c.confidential ? 'důvěrný (server)' : 'veřejný (SPA)' }}</td>
+                        <td class="num">{{ roleCounts[c.identifier] ?? 0 }}</td>
+                        <td>{% if c.active %}<span class="badge ok">aktivní</span>{% else %}<span class="badge off">vypnutá</span>{% endif %}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="muted">Zatím žádné aplikace.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Globální role</h2>
+        <p class="muted">Platí ve všech aplikacích (claim <code>global_roles</code>). <code>superadmin</code> navíc otevírá tuto správu.</p>
+        <div class="chips" style="margin-bottom:1rem">
+            {% for r in globalRoles %}
+                <span class="chip"><b>{{ r.slug }}</b>{% if r.description %}&nbsp;<span class="muted">{{ r.description }}</span>{% endif %}
+                    {% if r.slug != 'superadmin' %}
+                        <form method="post" action="{{ path('admin_client_role_delete', {id: r.id}) }}" onsubmit="return confirm('Smazat globální roli {{ r.slug|e('js') }}? Odebere se všem uživatelům.')">
+                            {{ m.csrf() }}<button type="submit" aria-label="Smazat roli {{ r.slug }}">×</button>
+                        </form>
+                    {% else %}&nbsp;{% endif %}
+                </span>
+            {% else %}
+                <span class="muted">Žádné.</span>
+            {% endfor %}
+        </div>
+        <form method="post" action="{{ path('admin_client_role_add', {identifier: '_global'}) }}" class="row">
+            {{ m.csrf() }}
+            <div class="field"><label for="gslug">Role</label><input type="text" id="gslug" name="slug" required placeholder="sekretar"></div>
+            <div class="field" style="flex-grow:2"><label for="gdesc">Popis</label><input type="text" id="gdesc" name="description" maxlength="255"></div>
+            <button class="btn secondary" type="submit">Přidat</button>
+        </form>
+    </div>
+{% endblock %}

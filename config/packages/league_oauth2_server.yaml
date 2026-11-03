@@ -1,0 +1,33 @@
+league_oauth2_server:
+    authorization_server:
+        private_key: '%env(resolve:OAUTH_PRIVATE_KEY)%'
+        private_key_passphrase: '%env(OAUTH_PASSPHRASE)%'
+        encryption_key: '%env(OAUTH_ENCRYPTION_KEY)%'
+        encryption_key_type: plain
+
+        access_token_ttl: PT10M
+        refresh_token_ttl: P30D
+        auth_code_ttl: PT5M
+
+        enable_auth_code_grant: true
+        enable_refresh_token_grant: true
+        enable_client_credentials_grant: true
+        enable_password_grant: false
+        enable_implicit_grant: false
+
+        # SPA (public klienti) musí posílat PKCE
+        require_code_challenge_for_public_clients: true
+        persist_access_token: true
+
+    resource_server:
+        public_key: '%env(resolve:OAUTH_PUBLIC_KEY)%'
+
+    scopes:
+        available: '%app.oidc_scopes%'
+        default: ['openid']
+
+    persistence:
+        doctrine:
+            entity_manager: default
+
+    role_prefix: ROLE_OAUTH2_

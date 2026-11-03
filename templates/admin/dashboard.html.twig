@@ -1,0 +1,21 @@
+{% extends 'admin/layout.html.twig' %}
+{% import 'admin/_macros.html.twig' as m %}
+{% block title %}Přehled{% endblock %}
+{% block body %}
+    <h1>Přehled</h1>
+    <div class="stats">
+        <a class="stat" href="{{ path('admin_users') }}"><b>{{ userCount }}</b><span>uživatelů ({{ activeCount }} aktivních)</span></a>
+        <a class="stat" href="{{ path('admin_teams') }}"><b>{{ teamCount }}</b><span>týmů</span></a>
+        <a class="stat" href="{{ path('admin_clients') }}"><b>{{ clientCount }}</b><span>aplikací</span></a>
+    </div>
+    <div class="card">
+        <h2>Poslední aktivita</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Kdy</th><th>Co</th><th>Kdo</th><th>Aplikace</th><th>IP</th></tr></thead>
+                <tbody>{{ m.audit_rows(recent, people) }}</tbody>
+            </table>
+        </div>
+        <p><a href="{{ path('admin_audit') }}">Celý audit →</a></p>
+    </div>
+{% endblock %}

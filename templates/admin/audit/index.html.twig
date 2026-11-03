@@ -1,0 +1,18 @@
+{% extends 'admin/layout.html.twig' %}
+{% import 'admin/_macros.html.twig' as m %}
+{% block title %}Audit{% endblock %}
+{% block body %}
+    <h1>Audit</h1>
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Kdy</th><th>Co</th><th>Kdo</th><th>Aplikace</th><th>IP</th></tr></thead>
+                <tbody>{{ m.audit_rows(logs, people) }}</tbody>
+            </table>
+        </div>
+        <div class="pager">
+            {% if page > 1 %}<a class="btn secondary small" href="{{ path('admin_audit', {page: page - 1}) }}">← Novější</a>{% endif %}
+            {% if hasNext %}<a class="btn secondary small" href="{{ path('admin_audit', {page: page + 1}) }}">Starší →</a>{% endif %}
+        </div>
+    </div>
+{% endblock %}

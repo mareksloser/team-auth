@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Klubový účet{% endblock %}</title>
+    <style>
+        :root { --bg:#f4f6f5; --card:#fff; --text:#16201b; --muted:#5b6b62; --accent:#14532d; --error:#b42318; --border:#d6ddd9; }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg:#0e1411; --card:#17201b; --text:#e8efe9; --muted:#9fb0a6; --accent:#4ade80; --error:#f97066; --border:#2a3730; }
+        }
+        * { box-sizing: border-box; }
+        body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg); color:var(--text);
+               font:16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; padding:1rem; }
+        .card { width:100%; max-width:380px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:2rem; }
+        h1 { font-size:1.35rem; margin:0 0 .25rem; }
+        p.muted { color:var(--muted); margin:0 0 1.5rem; font-size:.95rem; }
+        label { display:block; font-size:.9rem; margin:1rem 0 .35rem; }
+        input { width:100%; padding:.7rem .8rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:inherit; font:inherit; }
+        input:focus { outline:2px solid var(--accent); outline-offset:1px; }
+        button, .btn { display:block; width:100%; margin-top:1.5rem; padding:.75rem; border:0; border-radius:8px; background:var(--accent);
+                       color:var(--card); font:600 1rem system-ui, sans-serif; cursor:pointer; text-align:center; text-decoration:none; }
+        .error { background:color-mix(in srgb, var(--error) 12%, transparent); color:var(--error); padding:.7rem .8rem; border-radius:8px; font-size:.9rem; }
+        ul { padding-left:1.1rem; } code { font-size:.85rem; }
+    </style>
+</head>
+<body>
+<main class="card">{% block body %}{% endblock %}</main>
+</body>
+</html>

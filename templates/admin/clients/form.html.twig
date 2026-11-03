@@ -1,0 +1,111 @@
+{% extends 'admin/layout.html.twig' %}
+{% import 'admin/_macros.html.twig' as m %}
+{% block title %}{{ client ? client.name : 'Nová aplikace' }}{% endblock %}
+{% block body %}
+    <h1>
+        {{ client ? client.name : 'Nová aplikace' }}
+        {% if client %}
+            {% if client.active %}<span class="badge ok">aktivní</span>{% else %}<span class="badge off">vypnutá</span>{% endif %}
+            <span class="badge">{{ client.confidential ? 'důvěrný' : 'veřejný' }}</span>
+        {% endif %}
+    </h1>
+
+    <form method="post" class="card">
+        {{ m.csrf() }}
+        <div class="grid">
+            <div>
+                <div class="field"><label for="name">Název</label><input type="text" id="name" name="name" value="{{ form.name }}" required maxlength="128" placeholder="Match Video Review"></div>
+
+                {% if client %}
+                    <div class="field"><label>client_id</label><code>{{ client.identifier }}</code><div class="hint">Nelze změnit.</div></div>
+                    <label class="check"><input type="checkbox" name="active" value="1" {{ form.active ? 'checked' }}> Aktivní – vypnutá aplikace nedostane nové tokeny</label>
+                {% else %}
+                    <div class="field">
+                        <label for="identifier">client_id</label>
+                        <input type="text" id="identifier" name="identifier" value="{{ form.identifier }}" required pattern="[a-z0-9][a-z0-9_\-]{1,79}" placeholder="mvr-web">
+                        <div class="hint">Malá písmena, číslice, pomlčka. Bude v tokenech jako <code>aud</code>.</div>
+                    </div>
+                    <div class="field">
+                        <label>Typ</label>
+                        <label class="check"><input type="radio" name="type" value="public" {{ not form.confidential ? 'checked' }}> <span><b>Veřejný</b> – React/SPA nebo mobilní appka, bez secretu, vynucené PKCE</span></label>
+                        <label class="check"><input type="radio" name="type" value="confidential" {{ form.confidential ? 'checked' }}> <span><b>Důvěrný</b> – PHP backend, který umí secret uchovat</span></label>
+                    </div>
+                {% endif %}
+
+                <div class="field">
+                    <label for="redirect_uris">Redirect URI</label>
+                    <textarea id="redirect_uris" name="redirect_uris" placeholder="https://mvr.example.cz/auth/callback&#10;http://localhost:5173/auth/callback">{{ form.redirect_uris }}</textarea>
+                    <div class="hint">Jedna na řádek. Z jejich originů se povoluje i návrat po odhlášení. Origin SPA přidej také do <code>CORS_ALLOW_ORIGIN</code>.</div>
+                </div>
+            </div>
+            <div>
+                <div class="field">
+                    <label>Typy přihlášení (granty)</label>
+                    {% for value, label in grantOptions %}
+                        <label class="check"><input type="checkbox" name="grants[]" value="{{ value }}" {{ value in form.grants ? 'checked' }}> {{ label }}</label>
+                    {% endfor %}
+                </div>
+                <div class="field">
+                    <label>Povolené scope</label>
+                    {% for s in scopeOptions %}
+                        <label class="check"><input type="checkbox" name="scopes[]" value="{{ s }}" {{ s in form.scopes ? 'checked' }}> <code>{{ s }}</code></label>
+                    {% endfor %}
+                    <div class="hint">Nic nezaškrtnuto = aplikace smí žádat o všechny.</div>
+                </div>
+            </div>
+        </div>
+        <button class="btn" type="submit">{{ client ? 'Uložit' : 'Vytvořit' }}</button>
+        <a class="btn secondary" href="{{ path('admin_clients') }}">Zpět</a>
+    </form>
+
+    {% if client %}
+        <div class="card">
+            <h2>Role aplikace</h2>
+            <p class="muted">Role, které tahle aplikace zná. Uživatelům je přidělíš v jejich detailu, v tokenu budou v claimu <code>roles</code>.</p>
+            <div class="table-wrap" style="margin-bottom:1rem">
+                <table>
+                    <thead><tr><th>Role</th><th>Popis</th><th></th></tr></thead>
+                    <tbody>
+                    {% for r in roles %}
+                        <tr>
+                            <td><code>{{ r.slug }}</code></td>
+                            <td class="muted">{{ r.description }}</td>
+                            <td style="text-align:right">{{ m.post_button(path('admin_client_role_delete', {id: r.id}), 'Smazat', 'Smazat roli ' ~ r.slug ~ '? Odebere se všem uživatelům.', 'btn link') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="muted">Zatím žádné role.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <form method="post" action="{{ path('admin_client_role_add', {identifier: client.identifier}) }}" class="row">
+                {{ m.csrf() }}
+                <div class="field"><label for="rslug">Role</label><input type="text" id="rslug" name="slug" required placeholder="coach"></div>
+                <div class="field" style="flex-grow:2"><label for="rdesc">Popis</label><input type="text" id="rdesc" name="description" maxlength="255" placeholder="Může vytvářet markery a kresby"></div>
+                <button class="btn secondary" type="submit">Přidat roli</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Napojení</h2>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Issuer / authority</th><td><code>{{ issuer }}</code></td></tr>
+                    <tr><th>client_id</th><td><code>{{ client.identifier }}</code></td></tr>
+                    <tr><th>Discovery</th><td><code>{{ issuer }}/.well-known/openid-configuration</code></td></tr>
+                    <tr><th>Scope</th><td><code>{{ (form.scopes|length ? form.scopes : scopeOptions)|join(' ') }}</code></td></tr>
+                </table>
+            </div>
+            {% if client.confidential %}
+                <p class="muted" style="margin-top:1rem">Secret je uložený hashovaně a nejde zobrazit. Když ho ztratíš, vygeneruj nový – starý okamžitě přestane platit.</p>
+                {{ m.post_button(path('admin_client_secret', {identifier: client.identifier}), 'Vygenerovat nový secret', 'Starý secret přestane okamžitě platit. Pokračovat?', 'btn secondary') }}
+            {% endif %}
+        </div>
+
+        <div class="card danger-zone">
+            <h2>Smazat aplikaci</h2>
+            <p class="muted">Smaže klienta, jeho tokeny, role i jejich přiřazení uživatelům. Pro dočasné vypnutí stačí odškrtnout „Aktivní“.</p>
+            {{ m.post_button(path('admin_client_delete', {identifier: client.identifier}), 'Smazat aplikaci', 'Opravdu smazat ' ~ client.name ~ '? Nejde to vrátit.', 'btn danger') }}
+        </div>
+    {% endif %}
+{% endblock %}

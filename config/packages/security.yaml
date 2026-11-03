@@ -1,0 +1,61 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+            algorithm: argon2id
+
+    providers:
+        # přihlašovací formulář
+        users_by_email:
+            entity: { class: App\Entity\User, property: email }
+        # tokeny nesou `sub` = uuid uživatele
+        users_by_uuid:
+            entity: { class: App\Entity\User, property: uuid }
+
+    firewalls:
+        dev:
+            pattern: ^/(_profiler|_wdt|css|images|js)/
+            security: false
+
+        oidc_public:
+            pattern: ^/(\.well-known/|oauth/token)
+            security: false
+
+        userinfo:
+            pattern: ^/userinfo
+            stateless: true
+            provider: users_by_uuid
+            oauth2: true
+
+        main:
+            lazy: true
+            provider: users_by_email
+            user_checker: App\Security\UserChecker
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                username_parameter: email
+                password_parameter: password
+                enable_csrf: true
+                default_target_path: app_home
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
+            logout:
+                path: app_logout   # odpověď nastavuje App\EventListener\OidcLogoutListener
+
+    access_control:
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/logout, roles: PUBLIC_ACCESS }
+        - { path: ^/userinfo, roles: ROLE_OAUTH2_OPENID }
+        - { path: ^/oauth/authorize, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/admin, roles: ROLE_SUPERADMIN }
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

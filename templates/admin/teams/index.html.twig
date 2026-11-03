@@ -1,0 +1,42 @@
+{% extends 'admin/layout.html.twig' %}
+{% import 'admin/_macros.html.twig' as m %}
+{% block title %}Týmy{% endblock %}
+{% block body %}
+    <h1>Týmy</h1>
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Název</th><th>Zkratka (v tokenu)</th><th class="num">Členů</th><th></th></tr></thead>
+                <tbody>
+                {% for t in teams %}
+                    <tr>
+                        <td>
+                            <form method="post" action="{{ path('admin_team_rename', {id: t.id}) }}" class="row" style="flex-wrap:nowrap">
+                                {{ m.csrf() }}
+                                <div class="field"><input type="text" name="name" value="{{ t.name }}" required maxlength="100" aria-label="Název týmu {{ t.slug }}"></div>
+                                <button class="btn secondary small" type="submit">Uložit</button>
+                            </form>
+                        </td>
+                        <td><code>{{ t.slug }}</code></td>
+                        <td class="num">{{ counts[t.id] ?? 0 }}</td>
+                        <td style="text-align:right">{{ m.post_button(path('admin_team_delete', {id: t.id}), 'Smazat', 'Smazat tým ' ~ t.name ~ '? Zmizí i členství a role omezené na tento tým.', 'btn link') }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="muted">Zatím žádné týmy.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <form method="post" action="{{ path('admin_team_create') }}" class="card">
+        <h2>Nový tým</h2>
+        {{ m.csrf() }}
+        <div class="row">
+            <div class="field"><label for="slug">Zkratka</label><input type="text" id="slug" name="slug" required pattern="[a-z0-9\-]{1,50}" placeholder="u11"></div>
+            <div class="field" style="flex-grow:2"><label for="tname">Název</label><input type="text" id="tname" name="name" required maxlength="100" placeholder="Mladší přípravka"></div>
+            <button class="btn" type="submit">Vytvořit</button>
+        </div>
+        <p class="hint">Zkratka se objevuje v tokenech (<code>coach@u11</code>) a v aplikacích – později ji neměň.</p>
+    </form>
+{% endblock %}

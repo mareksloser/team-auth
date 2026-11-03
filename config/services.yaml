@@ -1,0 +1,21 @@
+parameters:
+    app.oidc_issuer: '%env(OIDC_ISSUER)%'
+    app.oidc_scopes: ['openid', 'profile', 'email', 'roles', 'teams', 'offline_access']
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        bind:
+            string $issuer: '%app.oidc_issuer%'
+            array $supportedScopes: '%app.oidc_scopes%'
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/OAuth/AccessToken.php'
+            - '../src/OAuth/Jwt.php'
+
+    # $inner (původní repozitář bundlu) doplňuje App\Kernel::process()

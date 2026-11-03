@@ -1,0 +1,57 @@
+{% macro csrf() %}<input type="hidden" name="_token" value="{{ csrf_token('admin') }}">{% endmacro %}
+
+{# Tlačítko jako POST formulář s potvrzením #}
+{% macro post_button(url, label, confirm = null, class = 'btn secondary small') %}
+    <form class="inline" method="post" action="{{ url }}"{% if confirm %} onsubmit="return confirm('{{ confirm|e('js') }}')"{% endif %}>
+        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+        <button type="submit" class="{{ class }}">{{ label }}</button>
+    </form>
+{% endmacro %}
+
+{% macro action_label(action) %}
+    {{- {
+        'login': 'Přihlášení',
+        'login_failed': 'Neúspěšné přihlášení',
+        'authorize': 'Vstup do aplikace',
+        'admin.user_create': 'Vytvořen uživatel',
+        'admin.user_update': 'Upraven uživatel',
+        'admin.user_password': 'Změna hesla',
+        'admin.user_delete': 'Smazán uživatel',
+        'admin.team_add': 'Přidán do týmu',
+        'admin.team_remove': 'Odebrán z týmu',
+        'admin.team_create': 'Vytvořen tým',
+        'admin.team_rename': 'Přejmenován tým',
+        'admin.team_delete': 'Smazán tým',
+        'admin.role_grant': 'Přidělena role',
+        'admin.role_revoke': 'Odebrána role',
+        'admin.role_create': 'Vytvořena role',
+        'admin.role_delete': 'Smazána role',
+        'admin.client_create': 'Vytvořena aplikace',
+        'admin.client_update': 'Upravena aplikace',
+        'admin.client_secret': 'Nový secret aplikace',
+        'admin.client_delete': 'Smazána aplikace',
+    }[action] ?? action -}}
+{% endmacro %}
+
+{% macro audit_rows(logs, people) %}
+    {% import _self as m %}
+    {% for log in logs %}
+        {% set who = people[log.userUuid ?? ''] ?? null %}
+        {% set targetUser = people[log.context.target ?? ''] ?? null %}
+        <tr>
+            <td class="muted mono" style="white-space:nowrap">{{ log.createdAt|date('j. n. Y H:i') }}</td>
+            <td>
+                {{ m.action_label(log.action) }}
+                {% if log.action == 'login_failed' and log.context.email is defined %}<span class="muted">({{ log.context.email }})</span>{% endif %}
+                {% if targetUser %}→ <a href="{{ path('admin_user_edit', {id: targetUser.id}) }}">{{ targetUser.name }}</a>{% endif %}
+                {% if log.context.role is defined %}<code>{{ log.context.role }}</code>{% endif %}
+                {% if log.context.team is defined %}<span class="badge">{{ log.context.team }}</span>{% endif %}
+            </td>
+            <td>{% if who %}<a href="{{ path('admin_user_edit', {id: who.id}) }}">{{ who.name }}</a>{% elseif log.userUuid %}<span class="muted mono">{{ log.userUuid|slice(0, 8) }}…</span>{% else %}<span class="muted">–</span>{% endif %}</td>
+            <td>{% if log.clientId %}<code>{{ log.clientId }}</code>{% endif %}</td>
+            <td class="muted mono">{{ log.ip }}</td>
+        </tr>
+    {% else %}
+        <tr><td colspan="5" class="muted">Zatím žádné záznamy.</td></tr>
+    {% endfor %}
+{% endmacro %}

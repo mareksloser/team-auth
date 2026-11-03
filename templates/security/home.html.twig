@@ -1,0 +1,27 @@
+{% extends 'security/layout.html.twig' %}
+
+{% block body %}
+    <h1>{{ user.name }}</h1>
+    <p class="muted">{{ user.email }}</p>
+
+    {% if user.teams|length %}
+        <strong>Týmy</strong>
+        <ul>
+            {% for t in user.teams %}<li>{{ t.team.name }} <span class="muted">({{ t.membership.value }})</span></li>{% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if user.roleAssignments|length %}
+        <strong>Role</strong>
+        <ul>
+            {% for r in user.roleAssignments %}
+                <li><code>{{ r.role.clientId ?? 'globální' }}</code> – {{ r.toClaim }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if is_granted('ROLE_SUPERADMIN') %}
+        <a class="btn" href="{{ path('admin_dashboard') }}">Správa</a>
+    {% endif %}
+    <a class="btn" href="{{ path('app_logout') }}">Odhlásit</a>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'admin/layout.html.twig' %}
+{% import 'admin/_macros.html.twig' as m %}
+{% block title %}{{ user.name }}{% endblock %}
+{% block body %}
+    {% set isMe = user.id == app.user.id %}
+    <h1>
+        {{ user.name }}
+        {% if user.active %}<span class="badge ok">aktivní</span>{% else %}<span class="badge off">deaktivován</span>{% endif %}
+        {% if isMe %}<span class="badge">to jsi ty</span>{% endif %}
+    </h1>
+    <p class="muted mono" style="margin-top:-.75rem">sub: {{ user.uuid }} · vytvořen {{ user.createdAt|date('j. n. Y') }}</p>
+
+    <div class="grid">
+        <form method="post" action="{{ path('admin_user_update', {id: user.id}) }}" class="card">
+            <h2>Údaje</h2>
+            {{ m.csrf() }}
+            <div class="field"><label for="name">Jméno</label><input type="text" id="name" name="name" value="{{ user.name }}" required maxlength="120"></div>
+            <div class="field"><label for="email">E-mail (přihlašovací)</label><input type="email" id="email" name="email" value="{{ user.email }}" required></div>
+            <label class="check"><input type="checkbox" name="active" value="1" {{ user.active ? 'checked' }} {{ isMe ? 'disabled' }}> Aktivní – může se přihlásit</label>
+            {% if isMe %}<input type="hidden" name="active" value="1">{% endif %}
+            <label class="check"><input type="checkbox" name="email_verified" value="1" {{ user.emailVerified ? 'checked' }}> E-mail ověřen</label>
+            <button class="btn" type="submit" style="margin-top:.5rem">Uložit</button>
+        </form>
+
+        <form method="post" action="{{ path('admin_user_password', {id: user.id}) }}" class="card">
+            <h2>Nastavit heslo</h2>
+            {{ m.csrf() }}
+            <div class="field">
+                <label for="password">Nové heslo</label>
+                <input type="password" id="password" name="password" required minlength="{{ minPassword }}" autocomplete="new-password">
+                <div class="hint">Alespoň {{ minPassword }} znaků. Platí okamžitě, už vydané tokeny dobíhají do expirace.</div>
+            </div>
+            <button class="btn secondary" type="submit">Změnit heslo</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Týmy</h2>
+        <div class="chips" style="margin-bottom:1rem">
+            {% for t in user.teams %}
+                <span class="chip">{{ t.team.name }} <span class="muted">· {{ t.membership.value }}</span>
+                    <form method="post" action="{{ path('admin_user_team_remove', {id: user.id, membershipId: t.id}) }}" onsubmit="return confirm('Odebrat z týmu {{ t.team.name|e('js') }}?')">
+                        {{ m.csrf() }}<button type="submit" title="Odebrat" aria-label="Odebrat z týmu {{ t.team.name }}">×</button>
+                    </form>
+                </span>
+            {% else %}
+                <span class="muted">V žádném týmu.</span>
+            {% endfor %}
+        </div>
+        {% if teams|length %}
+            <form method="post" action="{{ path('admin_user_team_add', {id: user.id}) }}" class="row">
+                {{ m.csrf() }}
+                <div class="field"><label for="team">Tým</label>
+                    <select id="team" name="team" required>{% for t in teams %}<option value="{{ t.id }}">{{ t.name }} ({{ t.slug }})</option>{% endfor %}</select>
+                </div>
+                <div class="field"><label for="membership">Jako</label>
+                    <select id="membership" name="membership">
+                        {% for ms in memberships %}<option value="{{ ms.value }}">{{ {player:'hráč', coach:'trenér', parent:'rodič', staff:'realizační tým'}[ms.value] }}</option>{% endfor %}
+                    </select>
+                </div>
+                <button class="btn secondary" type="submit">Přidat / změnit</button>
+            </form>
+        {% else %}
+            <p class="muted">Nejdřív <a href="{{ path('admin_teams') }}">vytvoř tým</a>.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Role v aplikacích</h2>
+        <div class="table-wrap" style="margin-bottom:1rem">
+            <table>
+                <thead><tr><th>Aplikace</th><th>Role</th><th>Tým</th><th>V tokenu</th><th></th></tr></thead>
+                <tbody>
+                {% for a in user.roleAssignments %}
+                    <tr>
+                        <td>{% if a.role.global %}<span class="badge warn">globální</span>{% else %}{{ clientNames[a.role.clientId] ?? a.role.clientId }} <span class="muted mono">{{ a.role.clientId }}</span>{% endif %}</td>
+                        <td><b>{{ a.role.slug }}</b></td>
+                        <td>{{ a.team ? a.team.name : 'všechny' }}</td>
+                        <td><code>{{ a.toClaim }}</code></td>
+                        <td style="text-align:right">{{ m.post_button(path('admin_user_role_revoke', {id: user.id, assignmentId: a.id}), 'Odebrat', 'Odebrat roli ' ~ a.toClaim ~ '?', 'btn link') }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="muted">Žádné role.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if roleGroups|length %}
+            <form method="post" action="{{ path('admin_user_role_grant', {id: user.id}) }}" class="row">
+                {{ m.csrf() }}
+                <div class="field"><label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        {% for label, groupRoles in roleGroups %}
+                            <optgroup label="{{ label }}">
+                                {% for r in groupRoles %}<option value="{{ r.id }}">{{ r.slug }}{% if r.description %} – {{ r.description }}{% endif %}</option>{% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field"><label for="role_team">Omezit na tým</label>
+                    <select id="role_team" name="team">
+                        <option value="0">všechny týmy</option>
+                        {% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <button class="btn secondary" type="submit">Přidělit</button>
+            </form>
+            <p class="hint">Role nabízené aplikacemi se definují v detailu <a href="{{ path('admin_clients') }}">aplikace</a>.</p>
+        {% else %}
+            <p class="muted">Zatím nejsou definované žádné role – přidej je v detailu <a href="{{ path('admin_clients') }}">aplikace</a>.</p>
+        {% endif %}
+    </div>
+
+    {% if not isMe %}
+        <div class="card danger-zone">
+            <h2>Smazat uživatele</h2>
+            <p class="muted">Smaže účet, členství i role. Pokud chceš přístup jen dočasně zablokovat, stačí odškrtnout „Aktivní“.</p>
+            {{ m.post_button(path('admin_user_delete', {id: user.id}), 'Smazat uživatele', 'Opravdu smazat ' ~ user.name ~ '? Nejde to vrátit.', 'btn danger') }}
+        </div>
+    {% endif %}
+{% endblock %}

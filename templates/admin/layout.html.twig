@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{% block title %}Správa{% endblock %} – Klubový účet</title>
+    <style>
+        :root {
+            --bg:#f3f5f4; --surface:#fff; --surface-2:#f8faf9; --text:#15201a; --muted:#5d6d64; --border:#dbe2de;
+            --accent:#166534; --accent-ink:#fff; --accent-soft:#e3f1e8; --danger:#b42318; --danger-soft:#fdecea;
+            --ok:#166534; --ok-soft:#e3f1e8; --warn:#92400e; --warn-soft:#fef3c7; --radius:10px;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg:#0d1310; --surface:#151d18; --surface-2:#1a241e; --text:#e6eee9; --muted:#9aaba1; --border:#26332b;
+                --accent:#4ade80; --accent-ink:#06210f; --accent-soft:#163122; --danger:#f97066; --danger-soft:#3a1714;
+                --ok:#4ade80; --ok-soft:#163122; --warn:#fbbf24; --warn-soft:#3a2c0b;
+            }
+        }
+        * { box-sizing:border-box; }
+        html { color-scheme: light dark; }
+        body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+        a { color:var(--accent); }
+        .shell { display:grid; grid-template-columns:220px 1fr; min-height:100vh; }
+        nav.side { background:var(--surface); border-right:1px solid var(--border); padding:1.25rem .75rem; display:flex; flex-direction:column; gap:.15rem; }
+        nav.side .brand { font-weight:700; padding:.25rem .75rem 1rem; }
+        nav.side .brand small { display:block; font-weight:400; color:var(--muted); font-size:.8rem; }
+        nav.side a { display:block; padding:.5rem .75rem; border-radius:8px; color:var(--text); text-decoration:none; }
+        nav.side a:hover { background:var(--surface-2); }
+        nav.side a.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+        nav.side .spacer { flex:1; }
+        nav.side .me { color:var(--muted); font-size:.85rem; padding:.5rem .75rem; overflow-wrap:anywhere; }
+        main { padding:1.75rem; max-width:1100px; width:100%; }
+        h1 { font-size:1.5rem; margin:0 0 1.25rem; display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+        h1 .actions { margin-left:auto; }
+        h2 { font-size:1.05rem; margin:0 0 .85rem; }
+        .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1.25rem; margin-bottom:1.25rem; }
+        .grid { display:grid; gap:1.25rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
+        .stats { display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); margin-bottom:1.25rem; }
+        .stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1rem 1.25rem; text-decoration:none; color:inherit; }
+        .stat b { display:block; font-size:1.75rem; line-height:1.2; }
+        .stat span { color:var(--muted); font-size:.9rem; }
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { text-align:left; padding:.6rem .5rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+        th { font-size:.8rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); font-weight:600; }
+        tr:last-child td { border-bottom:0; }
+        td.num { text-align:right; font-variant-numeric:tabular-nums; }
+        label { display:block; font-size:.88rem; font-weight:600; margin:0 0 .3rem; }
+        .field { margin-bottom:1rem; }
+        .hint { color:var(--muted); font-size:.83rem; margin-top:.25rem; font-weight:400; }
+        input[type=text], input[type=email], input[type=password], input[type=search], select, textarea {
+            width:100%; padding:.55rem .7rem; border:1px solid var(--border); border-radius:8px; background:var(--surface-2); color:inherit; font:inherit;
+        }
+        textarea { min-height:6rem; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.88rem; }
+        input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:0; }
+        .check { display:flex; gap:.5rem; align-items:flex-start; font-weight:400; margin-bottom:.4rem; }
+        .check input { margin-top:.25rem; }
+        .row { display:flex; gap:.6rem; flex-wrap:wrap; align-items:flex-end; }
+        .row > .field { flex:1 1 160px; margin-bottom:0; }
+        .btn { display:inline-flex; align-items:center; gap:.35rem; padding:.55rem 1rem; border:1px solid transparent; border-radius:8px;
+               background:var(--accent); color:var(--accent-ink); font:600 .9rem system-ui,sans-serif; cursor:pointer; text-decoration:none; white-space:nowrap; }
+        .btn.secondary { background:transparent; color:var(--text); border-color:var(--border); }
+        .btn.danger { background:var(--danger); color:#fff; }
+        .btn.link { background:none; border:0; color:var(--danger); padding:.25rem .4rem; font-weight:500; }
+        .btn.small { padding:.3rem .65rem; font-size:.82rem; }
+        form.inline { display:inline; }
+        .flash { padding:.75rem 1rem; border-radius:8px; margin-bottom:1rem; }
+        .flash.success { background:var(--ok-soft); color:var(--ok); }
+        .flash.error { background:var(--danger-soft); color:var(--danger); }
+        .badge { display:inline-block; padding:.1rem .5rem; border-radius:999px; font-size:.78rem; font-weight:600; background:var(--surface-2); border:1px solid var(--border); color:var(--muted); }
+        .badge.ok { background:var(--ok-soft); color:var(--ok); border-color:transparent; }
+        .badge.off { background:var(--danger-soft); color:var(--danger); border-color:transparent; }
+        .badge.warn { background:var(--warn-soft); color:var(--warn); border-color:transparent; }
+        code, .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.86rem; }
+        .muted { color:var(--muted); }
+        .danger-zone { border-color:var(--danger); }
+        .chips { display:flex; flex-wrap:wrap; gap:.4rem; }
+        .chip { display:inline-flex; align-items:center; gap:.25rem; background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:.15rem .25rem .15rem .65rem; font-size:.85rem; }
+        .chip form { display:inline; }
+        .chip button { border:0; background:none; color:var(--muted); cursor:pointer; font-size:1rem; line-height:1; padding:0 .3rem; }
+        .chip button:hover { color:var(--danger); }
+        .pager { display:flex; gap:.5rem; justify-content:flex-end; margin-top:1rem; }
+        .secret { font-family:ui-monospace,monospace; font-size:1rem; padding:.85rem; background:var(--surface-2); border:1px dashed var(--accent); border-radius:8px; overflow-wrap:anywhere; user-select:all; }
+        @media (max-width:760px) {
+            .shell { grid-template-columns:1fr; }
+            nav.side { flex-direction:row; flex-wrap:wrap; border-right:0; border-bottom:1px solid var(--border); padding:.6rem; gap:.25rem; }
+            nav.side .brand { width:100%; padding:.25rem .5rem .5rem; }
+            nav.side .spacer, nav.side .me { display:none; }
+            main { padding:1rem; }
+        }
+    </style>
+</head>
+<body>
+{% set route = app.request.attributes.get('_route') %}
+<div class="shell">
+    <nav class="side">
+        <div class="brand">Klubový účet<small>Správa</small></div>
+        <a href="{{ path('admin_dashboard') }}" class="{{ route in ['admin_dashboard'] ? 'active' }}">Přehled</a>
+        <a href="{{ path('admin_users') }}" class="{{ route starts with 'admin_user' ? 'active' }}">Uživatelé</a>
+        <a href="{{ path('admin_teams') }}" class="{{ route starts with 'admin_team' ? 'active' }}">Týmy</a>
+        <a href="{{ path('admin_clients') }}" class="{{ route starts with 'admin_client' ? 'active' }}">Aplikace</a>
+        <a href="{{ path('admin_audit') }}" class="{{ route == 'admin_audit' ? 'active' }}">Audit</a>
+        <div class="spacer"></div>
+        <div class="me">{{ app.user.name }}</div>
+        <a href="{{ path('app_home') }}">Můj účet</a>
+        <a href="{{ path('app_logout') }}">Odhlásit</a>
+    </nav>
+    <main>
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}<div class="flash {{ type }}" role="status">{{ message }}</div>{% endfor %}
+        {% endfor %}
+        {% block body %}{% endblock %}
+    </main>
+</div>
+</body>
+</html>
