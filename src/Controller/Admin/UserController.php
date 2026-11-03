@@ -15,6 +15,7 @@ use App\Entity\User;
 use App\Entity\UserRole;
 use App\Entity\UserTeam;
 use App\Repository\UserRepository;
+use App\Security\TwoFactor\TwoFactorSetup;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -112,6 +113,14 @@ final class UserController extends AdminController
     {
         return $this->handle($request, fn () => $this->admin->setPassword($user, (string) $request->request->get('password'), $this->actor()),
             'Heslo změněno.', 'admin_user_edit', ['id' => $user->getId()]);
+    }
+
+    /** For someone who lost both the phone and the backup codes. */
+    #[Route('/{id<\d+>}/2fa/disable', name: 'admin_user_2fa_disable', methods: ['POST'])]
+    public function disableTwoFactor(User $user, Request $request, TwoFactorSetup $setup): Response
+    {
+        return $this->handle($request, fn () => $setup->disableByAdmin($user, $this->actor()),
+            'Dvoufázové ověření vypnuto. Uživatel se přihlásí jen heslem a může si ho zapnout znovu.', 'admin_user_edit', ['id' => $user->getId()]);
     }
 
     #[Route('/{id<\d+>}/delete', name: 'admin_user_delete', methods: ['POST'])]

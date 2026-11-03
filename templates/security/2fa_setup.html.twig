@@ -1,0 +1,28 @@
+{% extends 'security/layout.html.twig' %}
+
+{% block title %}Zapnout dvoufázové ověření{% endblock %}
+
+{% block body %}
+    <h1>Dvoufázové ověření</h1>
+    <p class="muted">Kromě hesla budeš při přihlášení zadávat kód z aplikace v telefonu (Google Authenticator, Microsoft Authenticator, Aegis, 1Password…).</p>
+
+    <ol class="steps">
+        <li>V aplikaci přidej účet naskenováním QR kódu.</li>
+        <li>Opiš šestimístný kód, který ti aplikace ukáže.</li>
+    </ol>
+
+    <img class="qr" src="{{ qr }}" alt="QR kód pro aplikaci na ověřování" width="220" height="220">
+    <details>
+        <summary>Nejde naskenovat? Zadej klíč ručně</summary>
+        <p class="secret">{{ secretGroups|join(' ') }}</p>
+        <p class="muted" style="margin:0">Typ: časový (TOTP), 6 číslic, 30 sekund.</p>
+    </details>
+
+    <form method="post" action="{{ path('account_2fa_enable') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('account_2fa') }}">
+        <label for="code">Kód z aplikace</label>
+        <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" required autofocus>
+        <button type="submit">Zapnout</button>
+    </form>
+    <p class="muted" style="margin:1rem 0 0;text-align:center"><a href="{{ path('app_home') }}" style="color:inherit">Zpět na účet</a></p>
+{% endblock %}

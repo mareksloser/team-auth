@@ -1,0 +1,37 @@
+{# Two-factor step after the password; rendered by scheb/2fa-bundle (variables documented there). #}
+{% extends 'security/layout.html.twig' %}
+{% set branding = login_branding() %}
+{% set brandVars = branding.vars %}
+
+{% block title %}Ověření – {{ branding.client ? branding.client.name : 'Klubový účet' }}{% endblock %}
+
+{% block body %}
+    {% if branding.brand and branding.brand.hasLogo %}
+        <img class="logo" src="{{ path('branding_logo', {clientId: branding.client.identifier, v: branding.brand.logoFile}) }}" alt="{{ branding.client.name }}">
+    {% endif %}
+    <h1>Ověřovací kód</h1>
+    <p class="muted">Zadej šestimístný kód z aplikace v telefonu. Když telefon nemáš u sebe, použij jeden ze záložních kódů.</p>
+
+    {% if authenticationError %}
+        {% set messages = {
+            code_invalid: 'Kód není správný.',
+            code_reused: 'Tento kód už byl použit. Počkej na další.',
+        } %}
+        <div class="error">{{ messages[authenticationError] ?? authenticationError|trans(authenticationErrorData, 'security') }}</div>
+    {% endif %}
+
+    <form action="{{ checkPathUrl ? checkPathUrl : path(checkPathRoute) }}" method="post">
+        <label for="_auth_code">Kód</label>
+        <input id="_auth_code" type="text" name="{{ authCodeParameterName }}" autocomplete="one-time-code"
+               inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="12" required autofocus>
+        {% if isCsrfProtectionEnabled %}
+            <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
+        {% endif %}
+        <button type="submit">Ověřit</button>
+    </form>
+    <p class="muted" style="margin:1rem 0 0;text-align:center"><a href="{{ logoutPath }}" style="color:inherit">Zrušit přihlášení</a></p>
+{% endblock %}
+
+{% block footer %}
+    {% if branding.client %}<footer>Klubový účet · jedno přihlášení pro všechny klubové aplikace</footer>{% endif %}
+{% endblock %}

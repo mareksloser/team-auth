@@ -1,0 +1,23 @@
+{% extends 'security/layout.html.twig' %}
+
+{% block title %}Dvoufázové ověření{% endblock %}
+
+{% block body %}
+    <h1>Dvoufázové ověření</h1>
+    <p class="muted">Zapnuto {{ user.totpEnabledAt ? 'od ' ~ user.totpEnabledAt|date('j. n. Y') : '' }}. Zbývá {{ user.remainingBackupCodes }} nepoužitých záložních kódů.</p>
+
+    <form method="post" action="{{ path('account_2fa_backup_codes') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('account_2fa') }}">
+        <label for="pw_codes">Nové záložní kódy (staré přestanou platit)</label>
+        <input type="password" id="pw_codes" name="password" placeholder="Tvoje heslo" autocomplete="current-password" required>
+        <button type="submit">Vygenerovat nové kódy</button>
+    </form>
+
+    <form method="post" action="{{ path('account_2fa_disable') }}" onsubmit="return confirm('Opravdu vypnout dvoufázové ověření?')" style="margin-top:1.5rem">
+        <input type="hidden" name="_token" value="{{ csrf_token('account_2fa') }}">
+        <label for="pw_disable">Vypnout dvoufázové ověření</label>
+        <input type="password" id="pw_disable" name="password" placeholder="Tvoje heslo" autocomplete="current-password" required>
+        <button type="submit" class="danger">Vypnout</button>
+    </form>
+    <p class="muted" style="margin:1rem 0 0;text-align:center"><a href="{{ path('app_home') }}" style="color:inherit">Zpět na účet</a></p>
+{% endblock %}

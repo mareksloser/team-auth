@@ -37,15 +37,22 @@ security:
                 password_parameter: password
                 enable_csrf: true
                 default_target_path: app_home
-            login_throttling:
+            login_throttling:   # also limits two-factor code attempts
                 max_attempts: 5
                 interval: '15 minutes'
+            two_factor:
+                auth_form_path: 2fa_login
+                check_path: 2fa_login_check
+                default_target_path: app_home
+                enable_csrf: true
             logout:
                 path: app_logout   # response is set by App\EventListener\OidcLogoutListener
 
     access_control:
-        - { path: ^/login, roles: PUBLIC_ACCESS }
+        # Two-factor rules must come first.
         - { path: ^/logout, roles: PUBLIC_ACCESS }
+        - { path: ^/2fa, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/userinfo, roles: ROLE_OAUTH2_OPENID }
         - { path: ^/oauth/authorize, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/admin, roles: ROLE_SUPERADMIN }

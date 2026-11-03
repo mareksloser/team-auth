@@ -1,0 +1,16 @@
+# Optional two-factor authentication (TOTP) – see README "Two-factor authentication".
+scheb_two_factor:
+    security_tokens:
+        - Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken
+        - Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken
+    totp:
+        enabled: true
+        issuer: 'Klubový účet'
+        # Accept a code from the neighbouring 30 s window (phone clocks drift); must be lower than the period.
+        leeway: 15
+        template: security/2fa_form.html.twig
+    backup_codes:
+        enabled: true
+    # A code that was just used can't be replayed (NIST recommendation).
+    code_reuse_cache: cache.app
+    code_reuse_cache_duration: 90

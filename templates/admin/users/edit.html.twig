@@ -35,6 +35,17 @@
     </div>
 
     <div class="card">
+        <h2>Dvoufázové ověření</h2>
+        {% if user.totpAuthenticationEnabled %}
+            <p><span class="badge ok">zapnuto</span> {% if user.totpEnabledAt %}od {{ user.totpEnabledAt|date('j. n. Y') }}{% endif %} · zbývá {{ user.remainingBackupCodes }} záložních kódů</p>
+            <p class="muted">Když uživatel ztratí telefon i záložní kódy, vypni mu ověření. Přihlásí se pak jen heslem a může si ho zapnout znovu.</p>
+            {{ m.post_button(path('admin_user_2fa_disable', {id: user.id}), 'Vypnout dvoufázové ověření', 'Vypnout dvoufázové ověření pro ' ~ user.name ~ '? Udělej to jen po ověření, že jde opravdu o něj.', 'btn secondary') }}
+        {% else %}
+            <p><span class="badge">vypnuto</span> <span class="muted">Zapnout si ho může uživatel sám na stránce svého účtu.</span></p>
+        {% endif %}
+    </div>
+
+    <div class="card">
         <h2>Týmy</h2>
         <div class="chips" style="margin-bottom:1rem">
             {% for t in user.teams %}

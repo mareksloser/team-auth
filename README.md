@@ -46,6 +46,7 @@ Environment (`.env.local`):
 
 ```dotenv
 APP_SECRET=                      # php -r "echo bin2hex(random_bytes(32));"
+TOTP_ENCRYPTION_KEY=             # php -r "echo base64_encode(random_bytes(32));" (two-factor secrets)
 DATABASE_URL="mysql://user:pass@127.0.0.1:3306/team_auth?serverVersion=8.4&charset=utf8mb4"
 OIDC_ISSUER=https://auth.example.com   # public URL, no trailing slash
 OAUTH_PRIVATE_KEY=%kernel.project_dir%/config/jwt/private.pem
@@ -117,6 +118,34 @@ The file type is detected from the content, and SVGs are served with a sandboxin
 Business logic lives in `App\Admin\UserAdmin`, `TeamAdmin`, `ClientAdmin` and `App\Branding\BrandingService`
 (testable without HTTP; `Branding\Color` and `Branding\LogoType` are pure);
 controllers only pass input in and render results. All changes go through POST with a CSRF token.
+
+## Two-factor authentication (optional TOTP)
+
+Every user can turn on two-factor authentication on their account page (`/` → *Dvoufázové ověření*):
+scan a QR code with an authenticator app (Google/Microsoft Authenticator, Aegis, 1Password, …),
+confirm with the first code and store 10 one-time backup codes. After that, signing in asks for the
+password and then a 6-digit code (or a backup code). The code step uses the application's branding too.
+
+- Built on [scheb/2fa-bundle](https://github.com/scheb/2fa) (TOTP: SHA-1, 6 digits, 30 s, ±15 s leeway).
+  `login_throttling` also limits code attempts and a used code can't be replayed (`code_reuse_cache`).
+- Secrets are encrypted at rest with libsodium (`TOTP_ENCRYPTION_KEY`); backup codes are stored as hashes.
+  If the key is lost or changed, users with 2FA can't sign in (fail closed) until an admin turns it off.
+- The QR code is rendered locally (bacon/bacon-qr-code), the secret never leaves the server.
+- Turning it off or regenerating backup codes requires the password. An admin can turn it off for a
+  user who lost both the phone and the backup codes (*Uživatelé → detail*). Everything is in the audit log.
+
+Setup:
+
+```bash
+composer require scheb/2fa-bundle scheb/2fa-totp scheb/2fa-backup-code bacon/bacon-qr-code
+# .env.local: TOTP_ENCRYPTION_KEY=   php -r "echo base64_encode(random_bytes(32));"
+php bin/console doctrine:migrations:diff     # adds totp_* columns to users
+php bin/console doctrine:migrations:migrate
+php bin/console cache:clear
+```
+
+Requires PHP 8.4+ (scheb/2fa-bundle 8) and the `sodium` and `xmlwriter` extensions. Keep a backup of
+`TOTP_ENCRYPTION_KEY` together with the database backups.
 
 ## How it fits together
 

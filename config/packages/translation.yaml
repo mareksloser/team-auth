@@ -1,5 +1,5 @@
 framework:
-    default_locale: en
+    default_locale: cs   # login, 2FA and validation messages in Czech
     translator:
         default_path: '%kernel.project_dir%/translations'
         providers:

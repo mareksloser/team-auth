@@ -1,0 +1,13 @@
+{% extends 'security/layout.html.twig' %}
+
+{% block title %}Záložní kódy{% endblock %}
+
+{% block body %}
+    <h1>{{ justEnabled ? 'Hotovo, ověření je zapnuté' : 'Nové záložní kódy' }}</h1>
+    <p class="muted">Ulož si tyhle záložní kódy (vytiskni, opiš nebo dej do správce hesel). Každý funguje jednou místo kódu z telefonu. <b>Znovu je už neuvidíš.</b></p>
+    <ul class="codes">
+        {% for code in codes %}<li>{{ code }}</li>{% endfor %}
+    </ul>
+    <button type="button" onclick="navigator.clipboard.writeText({{ codes|join("\n")|json_encode|e('html_attr') }}).then(() => this.textContent = 'Zkopírováno')">Zkopírovat kódy</button>
+    <a class="btn" href="{{ path('app_home') }}" style="background:transparent;color:var(--text);border:1px solid var(--border)">Mám je uložené</a>
+{% endblock %}

@@ -20,6 +20,14 @@
         </ul>
     {% endif %}
 
+    <div class="status">
+        <span>Dvoufázové ověření: <b>{{ user.totpAuthenticationEnabled ? 'zapnuto' : 'vypnuto' }}</b></span>
+        <a href="{{ path('account_2fa') }}">{{ user.totpAuthenticationEnabled ? 'Nastavení' : 'Zapnout' }}</a>
+    </div>
+    {% if not user.totpAuthenticationEnabled and is_granted('ROLE_SUPERADMIN') %}
+        <p class="muted" style="margin:.5rem 0 0;font-size:.85rem">Jako správce bys ho měl mít zapnuté.</p>
+    {% endif %}
+
     {% if is_granted('ROLE_SUPERADMIN') %}
         <a class="btn" href="{{ path('admin_dashboard') }}">Správa</a>
     {% endif %}
