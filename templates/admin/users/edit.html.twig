@@ -46,6 +46,29 @@
     </div>
 
     <div class="card">
+        <h2>Přihlášená zařízení</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Zařízení</th><th>Aplikace</th><th>Naposledy</th><th>IP</th></tr></thead>
+                <tbody>
+                {% for row in devices %}
+                    <tr>
+                        <td>{{ row.device ? row.device.userAgent|device_name : 'Starší přihlášení' }}</td>
+                        <td>{{ row.grants|map(g => clientNames[g.clientId] ?? g.clientId)|reduce((carry, n) => n in carry ? carry : carry|merge([n]), [])|join(', ') ?: '–' }}</td>
+                        <td class="muted" title="{{ row.lastSeen|date('j. n. Y H:i') }}">{{ row.lastSeen|ago }}</td>
+                        <td class="muted mono">{{ row.device ? row.device.ip : '' }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="muted">Nikde přihlášený.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="hint">Změna hesla nebo deaktivace odhlásí uživatele ze všech zařízení automaticky.</p>
+        {{ m.post_button(path('admin_user_devices_logout', {id: user.id}), 'Odhlásit ze všech zařízení', 'Odhlásit ' ~ user.name ~ ' ze všech zařízení a aplikací?', 'btn secondary') }}
+    </div>
+
+    <div class="card">
         <h2>Týmy</h2>
         <div class="chips" style="margin-bottom:1rem">
             {% for t in user.teams %}

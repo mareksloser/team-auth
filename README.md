@@ -147,6 +147,24 @@ php bin/console cache:clear
 Requires PHP 8.4+ (scheb/2fa-bundle 8) and the `sodium` and `xmlwriter` extensions. Keep a backup of
 `TOTP_ENCRYPTION_KEY` together with the database backups.
 
+## Signed-in devices
+
+The account page lists where the user is signed in: one row per browser (*Chrome · Windows*, *Safari · iPhone*),
+with the applications used on it, last activity and IP. Other devices can be signed out one by one or all at
+once; an admin can sign a user out everywhere (*Uživatelé → detail*).
+
+- A browser is recognised by a long-lived `device_id` cookie (only its SHA-256 is stored), so signing in
+  again from the same browser reuses the row.
+- Each application sign-in (`app_grants`) follows its refresh token through rotation. Signing out a device
+  ends its auth-server session on the next request and makes the applications' refreshes fail, so they
+  lose access when the current access token expires (max. 10 minutes).
+- Logout (including RP-initiated logout from an app) signs the current device out.
+- A password change or deactivation by an admin signs the user out of all devices and revokes all tokens.
+- Rows inactive for 90 days are deleted.
+
+After applying: `php bin/console doctrine:migrations:diff && php bin/console doctrine:migrations:migrate`
+(tables `user_devices`, `app_grants`).
+
 ## How it fits together
 
 - `src/Kernel.php` (compiler pass) finds the bundle's services by class and swaps in
@@ -169,7 +187,7 @@ Requires PHP 8.4+ (scheb/2fa-bundle 8) and the `sodium` and `xmlwriter` extensio
 ## Roadmap
 
 1. E-mail invitations and password reset (`symfony/mailer`), parent accounts linked to minor players.
-2. TOTP for admins (`scheb/2fa-bundle`), refresh-token revocation on logout / deactivation.
+2. Passkeys (WebAuthn) as a passwordless option.
 3. `nonce` in the id_token (not stored yet; not required for code flow with PKCE).
 4. Key rotation – JWKS already returns `kid`, publish old and new keys side by side.
 5. Use the bundle v2 `AccessTokenExtraClaimsResolveEvent` instead of the custom repository decorator.

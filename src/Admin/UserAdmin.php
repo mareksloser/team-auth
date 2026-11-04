@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin;
 
 use App\Audit\AuditLogger;
+use App\Device\DeviceTracker;
 use App\Entity\AppRole;
 use App\Entity\Membership;
 use App\Entity\TeamCategory;
@@ -25,6 +26,7 @@ final class UserAdmin
         private readonly UserRepository $users,
         private readonly UserPasswordHasherInterface $hasher,
         private readonly AuditLogger $audit,
+        private readonly DeviceTracker $devices,
     ) {
     }
 
@@ -63,6 +65,9 @@ final class UserAdmin
         $user->setActive($active);
         $user->setEmailVerified($emailVerified);
         $this->em->flush();
+        if (!$active) {
+            $this->devices->signOutEverywhere($user);
+        }
         $this->audit->log('admin.user_update', $actor->getUuid(), null, ['target' => $user->getUuid(), 'active' => $active]);
     }
 
@@ -70,7 +75,14 @@ final class UserAdmin
     {
         $user->setPassword($this->hashedPassword($user, $password));
         $this->em->flush();
+        $this->devices->signOutEverywhere($user); // a new password ends all existing sign-ins
         $this->audit->log('admin.user_password', $actor->getUuid(), null, ['target' => $user->getUuid()]);
+    }
+
+    public function signOutEverywhere(User $user, User $actor): void
+    {
+        $this->devices->signOutEverywhere($user);
+        $this->audit->log('admin.devices_logout', $actor->getUuid(), null, ['target' => $user->getUuid()]);
     }
 
     public function delete(User $user, User $actor): void

@@ -6,6 +6,7 @@ namespace App\EventListener;
 
 use App\Audit\AuditLogger;
 use App\Entity\User;
+use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
@@ -27,7 +28,7 @@ final class LoginAuditSubscriber implements EventSubscriberInterface
     public function onSuccess(LoginSuccessEvent $event): void
     {
         // interactive logins only, not every bearer-token request
-        if ('main' !== $event->getFirewallName()) {
+        if ('main' !== $event->getFirewallName() || $event->getAuthenticatedToken() instanceof TwoFactorTokenInterface) {
             return;
         }
         $user = $event->getUser();

@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Branding\LoginBranding;
+use App\Device\DeviceTracker;
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
@@ -35,8 +38,18 @@ final class SecurityController extends AbstractController
     }
 
     #[Route('/', name: 'app_home')]
-    public function home(#[CurrentUser] User $user): Response
+    public function home(#[CurrentUser] User $user, Request $request, DeviceTracker $devices, ClientManagerInterface $clients): Response
     {
-        return $this->render('security/home.html.twig', ['user' => $user]);
+        $clientNames = [];
+        foreach ($clients->list(null) as $client) {
+            $clientNames[$client->getIdentifier()] = $client->getName();
+        }
+
+        return $this->render('security/home.html.twig', [
+            'user' => $user,
+            'devices' => $devices->activeDevices($user),
+            'currentDevice' => $devices->currentDevice($request),
+            'clientNames' => $clientNames,
+        ]);
     }
 }

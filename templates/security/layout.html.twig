@@ -36,6 +36,13 @@
         .secret, .codes { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.05em; }
         .secret { font-size:1.05rem; word-break:break-all; user-select:all; }
         .codes { list-style:none; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:.4rem .75rem; font-size:1.05rem; margin:1rem 0 0; }
+        h2.section { font-size:1rem; margin:1.5rem 0 .5rem; }
+        .devices { list-style:none; padding:0; margin:0; display:grid; gap:.5rem; }
+        .devices li { display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; padding:.6rem .75rem; border:1px solid var(--border); border-radius:8px; }
+        .small { font-size:.82rem; }
+        .pill { font-size:.72rem; padding:.05rem .45rem; border-radius:999px; background:color-mix(in srgb, var(--accent) 16%, transparent); margin-left:.25rem; white-space:nowrap; }
+        button.link { display:inline; width:auto; margin:0; padding:.2rem .3rem; background:none; color:var(--error); font-weight:500; font-size:.88rem; }
+        button.secondary { background:transparent; color:var(--text); border:1px solid var(--border); }
         .status { display:flex; justify-content:space-between; align-items:center; gap:.5rem; padding:.7rem .8rem; border:1px solid var(--border); border-radius:8px; margin:1rem 0 0; font-size:.95rem; }
     </style>
     {#- Per-application branding (validated hex colours only) overrides the theme in both light and dark mode. #}

@@ -28,6 +28,39 @@
         <p class="muted" style="margin:.5rem 0 0;font-size:.85rem">Jako správce bys ho měl mít zapnuté.</p>
     {% endif %}
 
+    <h2 class="section">Přihlášená zařízení</h2>
+    <ul class="devices">
+        {% for row in devices %}
+            {% set isCurrent = row.device and currentDevice and row.device.publicId == currentDevice.publicId %}
+            <li>
+                <div>
+                    <b>{{ row.device ? row.device.userAgent|device_name : 'Starší přihlášení' }}</b>
+                    {% if isCurrent %}<span class="pill">toto zařízení</span>{% endif %}
+                    <div class="muted small">
+                        {{ isCurrent ? 'aktivní teď' : 'aktivní ' ~ row.lastSeen|ago }}{% if row.device and row.device.ip %} · {{ row.device.ip }}{% endif %}
+                    </div>
+                    {% if row.grants|length %}
+                        <div class="muted small">{{ row.grants|map(g => clientNames[g.clientId] ?? g.clientId)|reduce((carry, n) => n in carry ? carry : carry|merge([n]), [])|join(', ') }}</div>
+                    {% endif %}
+                </div>
+                {% if row.device and not isCurrent %}
+                    <form method="post" action="{{ path('account_device_logout', {publicId: row.device.publicId}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('account_devices') }}">
+                        <button type="submit" class="link">Odhlásit</button>
+                    </form>
+                {% endif %}
+            </li>
+        {% else %}
+            <li class="muted">Žádná aktivní přihlášení.</li>
+        {% endfor %}
+    </ul>
+    {% if devices|length > 1 %}
+        <form method="post" action="{{ path('account_devices_logout_others') }}" onsubmit="return confirm('Odhlásit všechna ostatní zařízení?')">
+            <input type="hidden" name="_token" value="{{ csrf_token('account_devices') }}">
+            <button type="submit" class="secondary">Odhlásit všechna ostatní zařízení</button>
+        </form>
+    {% endif %}
+
     {% if is_granted('ROLE_SUPERADMIN') %}
         <a class="btn" href="{{ path('admin_dashboard') }}">Správa</a>
     {% endif %}

@@ -8,6 +8,7 @@ use App\Admin\AdminException;
 use App\Admin\ClientAdmin;
 use App\Admin\TeamAdmin;
 use App\Admin\UserAdmin;
+use App\Device\DeviceTracker;
 use App\Entity\AppRole;
 use App\Entity\Membership;
 use App\Entity\TeamCategory;
@@ -70,7 +71,7 @@ final class UserController extends AdminController
     }
 
     #[Route('/{id<\d+>}', name: 'admin_user_edit', methods: ['GET'])]
-    public function edit(User $user, TeamAdmin $teams, ClientAdmin $clients): Response
+    public function edit(User $user, TeamAdmin $teams, ClientAdmin $clients, DeviceTracker $devices): Response
     {
         $clientNames = [];
         foreach ($clients->all() as $client) {
@@ -90,7 +91,15 @@ final class UserController extends AdminController
             'clientNames' => $clientNames,
             'memberships' => Membership::cases(),
             'minPassword' => UserAdmin::MIN_PASSWORD_LENGTH,
+            'devices' => $devices->activeDevices($user),
         ]);
+    }
+
+    #[Route('/{id<\d+>}/devices/logout', name: 'admin_user_devices_logout', methods: ['POST'])]
+    public function signOutEverywhere(User $user, Request $request): Response
+    {
+        return $this->handle($request, fn () => $this->admin->signOutEverywhere($user, $this->actor()),
+            'Uživatel je odhlášený ze všech zařízení.', 'admin_user_edit', ['id' => $user->getId()]);
     }
 
     #[Route('/{id<\d+>}/update', name: 'admin_user_update', methods: ['POST'])]
