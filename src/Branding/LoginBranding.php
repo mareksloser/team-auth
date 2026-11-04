@@ -5,20 +5,17 @@ declare(strict_types=1);
 namespace App\Branding;
 
 use App\Entity\ClientBranding;
+use App\Security\OAuthReturn;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\ClientInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 /**
- * Which application the user is signing in to, for the login and two-factor pages.
- * The firewall saved the /oauth/authorize URL as the target path before redirecting to /login;
- * its client_id identifies the application.
+ * Which application the user is signing in to, for the login and two-factor pages:
+ * the client_id of the authorize request that sent them here (see OAuthReturn).
  */
 final class LoginBranding
 {
-    use TargetPathTrait;
-
     /** @var array{client: ?ClientInterface, brand: ?ClientBranding, vars: array<string, string>}|null */
     private ?array $current = null;
 
@@ -26,6 +23,7 @@ final class LoginBranding
         private readonly RequestStack $requests,
         private readonly ClientManagerInterface $clients,
         private readonly BrandingService $branding,
+        private readonly OAuthReturn $return,
     ) {
     }
 
@@ -44,13 +42,8 @@ final class LoginBranding
     private function client(): ?ClientInterface
     {
         $request = $this->requests->getCurrentRequest();
-        $target = null !== $request && $request->hasSession() ? $this->getTargetPath($request->getSession(), 'main') : null;
-        if (null === $target || !str_contains((string) parse_url($target, \PHP_URL_PATH), '/oauth/authorize')) {
-            return null;
-        }
-        parse_str((string) parse_url($target, \PHP_URL_QUERY), $query);
-        $clientId = $query['client_id'] ?? null;
-        $client = \is_string($clientId) && '' !== $clientId ? $this->clients->find($clientId) : null;
+        $clientId = null !== $request && $request->hasSession() ? OAuthReturn::clientId($this->return->pending($request->getSession())) : null;
+        $client = null !== $clientId ? $this->clients->find($clientId) : null;
 
         return null !== $client && $client->isActive() ? $client : null;
     }

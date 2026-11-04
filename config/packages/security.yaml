@@ -49,6 +49,9 @@ security:
                 path: app_logout   # response is set by App\EventListener\OidcLogoutListener
 
     access_control:
+        # Browser background requests must not trigger a login: they would overwrite the
+        # "where to return" target path while the login or two-factor page is open.
+        - { path: '^/(favicon\.ico|apple-touch-icon[^/]*\.png|robots\.txt|site\.webmanifest)$', roles: PUBLIC_ACCESS }
         # Two-factor rules must come first.
         - { path: ^/logout, roles: PUBLIC_ACCESS }
         - { path: ^/2fa, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
