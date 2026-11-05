@@ -215,6 +215,22 @@ php bin/console league:oauth2-server:create-client "Klubový rozcestník" portal
 Add the portal origin to `CORS_ALLOW_ORIGIN`. Existing clients that list their scopes explicitly keep working;
 only clients that should read the catalogue need `apps`.
 
+## Directory API
+
+`GET /api/directory` with a Bearer access token that has the `roles` scope returns all teams and the role
+catalogue of the application the token was issued to. Apps use it to offer "who may see this" choices without
+keeping their own copy (e.g. the [club portal](https://github.com/mareksloser/club-portal) link editor):
+
+```json
+{
+  "clientId": "portal-web",
+  "teams": [{ "slug": "u11", "name": "Mladší přípravka" }],
+  "roles": [{ "slug": "admin", "description": "Upravuje rozcestník" }, { "slug": "vybor", "description": "Výbor klubu" }]
+}
+```
+
+It is meant to be called by the app's backend with the signed-in user's token, so no CORS entry is needed.
+
 ## How it fits together
 
 - `src/Kernel.php` (compiler pass) finds the bundle's services by class and swaps in
