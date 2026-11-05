@@ -8,6 +8,7 @@ use App\Admin\AdminException;
 use App\Admin\ClientAdmin;
 use App\Branding\BrandingService;
 use App\Entity\AppRole;
+use App\Portal\PortalAdmin;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\ClientInterface;
 use League\Bundle\OAuth2ServerBundle\OAuth2Grants;
@@ -24,6 +25,7 @@ final class ClientController extends AdminController
         private readonly ClientAdmin $admin,
         private readonly EntityManagerInterface $em,
         private readonly BrandingService $branding,
+        private readonly PortalAdmin $portal,
     ) {
     }
 
@@ -103,6 +105,8 @@ final class ClientController extends AdminController
             'brand' => $brand,
             'brandVars' => BrandingService::cssVariables($brand),
             'maxLogoKb' => BrandingService::MAX_LOGO_BYTES / 1024,
+            'portal' => $this->portal->find($identifier),
+            'portalMaxDescription' => PortalAdmin::MAX_DESCRIPTION,
         ]);
     }
 
@@ -154,6 +158,23 @@ final class ClientController extends AdminController
 
         return $this->handle($request, fn () => $this->branding->removeLogo($client->getIdentifier(), $this->actor()),
             'Logo odebráno.', 'admin_client_edit', ['identifier' => $identifier]);
+    }
+
+    #[Route('/{identifier}/portal', name: 'admin_client_portal', methods: ['POST'])]
+    public function portal(string $identifier, Request $request): Response
+    {
+        $client = $this->client($identifier);
+        $r = $request->request;
+
+        return $this->handle($request, fn () => $this->portal->update(
+            $client->getIdentifier(),
+            (string) $r->get('launch_url'),
+            (string) $r->get('description'),
+            $r->getBoolean('visible'),
+            $r->getBoolean('public_access'),
+            (int) $r->get('sort_order', 0),
+            $this->actor(),
+        ), 'Rozcestník uložen.', 'admin_client_edit', ['identifier' => $identifier]);
     }
 
     #[Route('/{identifier}/delete', name: 'admin_client_delete', methods: ['POST'])]

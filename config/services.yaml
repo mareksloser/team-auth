@@ -1,6 +1,7 @@
 parameters:
     app.oidc_issuer: '%env(OIDC_ISSUER)%'
-    app.oidc_scopes: ['openid', 'profile', 'email', 'roles', 'teams', 'offline_access']
+    # `apps` = the list of applications for the club portal (GET /api/apps)
+    app.oidc_scopes: ['openid', 'profile', 'email', 'roles', 'teams', 'apps', 'offline_access']
 
 services:
     _defaults:

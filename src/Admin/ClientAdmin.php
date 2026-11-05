@@ -8,6 +8,7 @@ use App\Audit\AuditLogger;
 use App\Branding\BrandingService;
 use App\Entity\AppRole;
 use App\Entity\User;
+use App\Portal\PortalAdmin;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\Client;
@@ -39,6 +40,7 @@ final class ClientAdmin
         private readonly PasswordHasherInterface $secretHasher,
         private readonly AuditLogger $audit,
         private readonly BrandingService $branding,
+        private readonly PortalAdmin $portal,
         private readonly array $supportedScopes,
     ) {
     }
@@ -122,6 +124,7 @@ final class ClientAdmin
         }
         $this->em->flush();
         $this->branding->delete($identifier);
+        $this->portal->delete($identifier);
         $this->clients->remove($client);
         $this->audit->log('admin.client_delete', $actor->getUuid(), $identifier);
     }

@@ -26,6 +26,13 @@ security:
             provider: users_by_uuid
             oauth2: true
 
+        # Bearer-token API for club apps (GET /api/apps for the portal)
+        api:
+            pattern: ^/api/
+            stateless: true
+            provider: users_by_uuid
+            oauth2: true
+
         main:
             lazy: true
             provider: users_by_email
@@ -57,6 +64,8 @@ security:
         - { path: ^/2fa, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/userinfo, roles: ROLE_OAUTH2_OPENID }
+        - { path: ^/api/apps, roles: ROLE_OAUTH2_APPS }
+        - { path: ^/api/, roles: ROLE_NO_ACCESS }
         - { path: ^/oauth/authorize, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/admin, roles: ROLE_SUPERADMIN }
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }

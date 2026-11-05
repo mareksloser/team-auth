@@ -1,6 +1,6 @@
 # Team Auth – OIDC login server (Symfony + MySQL)
 
-Central sign-in for club applications (match video review, video library, tactics board, …).
+Central sign-in for club applications (match video review, pitch booking, video library, …; listed in the club portal).
 It speaks standard **OpenID Connect**, so clients use ordinary libraries
 (`oidc-client-ts`, Symfony `access_token` + `oidc`) and the server can be swapped for Keycloak at any time.
 
@@ -164,6 +164,56 @@ once; an admin can sign a user out everywhere (*Uživatelé → detail*).
 
 After applying: `php bin/console doctrine:migrations:diff && php bin/console doctrine:migrations:migrate`
 (tables `user_devices`, `app_grants`).
+
+## Club portal (application catalogue)
+
+The club portal ([club-portal](https://github.com/mareksloser/club-portal)) is a launchpad: after signing in,
+a user sees a tile for every application they can use. Permissions are not duplicated anywhere: an application
+is listed when the user has **any of its roles** (the same roles that go into its tokens), when it is marked
+public, or for a `superadmin`.
+
+**Admin:** *Aplikace → detail → Rozcestník* – show/hide the tile, its URL, a short description, order and
+"visible to every signed-in user". The tile uses the logo and accent colour from *Vzhled přihlášení*.
+Applications without a portal entry (backends, the portal itself) are never listed. Point the tile at the
+app's `/login` when it redirects straight to the club login (like MVR): thanks to the IdP session the user lands
+in the app already signed in.
+
+**API:** `GET /api/apps` with a Bearer access token that has the `apps` scope (any client allowed to request it):
+
+```json
+{
+  "apps": [{
+    "clientId": "mvr-web",
+    "name": "Match Video Review",
+    "description": "Rozbory zápasů",
+    "url": "https://mvr.example.com/login",
+    "logoUrl": "https://auth.example.com/branding/mvr-web/logo?v=mvr-web-3f2a….svg",
+    "accentColor": "#166534",
+    "roles": [{ "role": "coach", "team": "u11", "teamName": "Mladší přípravka" }],
+    "access": "role"
+  }]
+}
+```
+
+`access` is `role`, `public` (listed for everyone) or `superadmin` (listed only because of the global role).
+The selection lives in `App\Portal\AppCatalog::select()` (pure); admin changes go through `App\Portal\PortalAdmin`.
+
+Setup:
+
+```bash
+php bin/console doctrine:migrations:diff      # adds the client_portal table
+php bin/console doctrine:migrations:migrate
+php bin/console cache:clear
+
+# the portal SPA (public client); it needs no roles of its own
+php bin/console league:oauth2-server:create-client "Klubový rozcestník" portal-web --public \
+  --redirect-uri=https://portal.example.com/auth/callback \
+  --grant-type=authorization_code --grant-type=refresh_token \
+  --scope=openid --scope=profile --scope=email --scope=roles --scope=teams --scope=apps --scope=offline_access
+```
+
+Add the portal origin to `CORS_ALLOW_ORIGIN`. Existing clients that list their scopes explicitly keep working;
+only clients that should read the catalogue need `apps`.
 
 ## How it fits together
 

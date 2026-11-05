@@ -172,6 +172,37 @@
         </script>
 
         <div class="card">
+            <h2>Rozcestník</h2>
+            <p class="muted">Dlaždice v klubovém rozcestníku. Uživatel ji uvidí, když má v této aplikaci aspoň jednu roli (nebo je aplikace veřejná). Logo a barvu bere z Vzhledu přihlášení.</p>
+            <form method="post" action="{{ path('admin_client_portal', {identifier: client.identifier}) }}">
+                {{ m.csrf() }}
+                <label class="check"><input type="checkbox" name="visible" value="1" {{ portal is null or portal.visible ? 'checked' }}> Zobrazit v rozcestníku</label>
+                <div class="grid">
+                    <div>
+                        <div class="field">
+                            <label for="launch_url">Adresa aplikace</label>
+                            <input type="url" id="launch_url" name="launch_url" value="{{ portal.launchUrl ?? '' }}" placeholder="https://mvr.example.cz/login" maxlength="255">
+                            <div class="hint">Kam dlaždice vede. Když aplikace má stránku <code>/login</code>, která rovnou přesměruje na klubové přihlášení (jako MVR), použij ji: uživatel s přihlášením v klubovém účtu vejde bez klikání. Prázdná adresa s vypnutým zobrazením aplikaci z rozcestníku úplně odebere.</div>
+                        </div>
+                        <div class="field">
+                            <label for="portal_description">Popis</label>
+                            <input type="text" id="portal_description" name="description" value="{{ portal.description ?? '' }}" maxlength="{{ portalMaxDescription }}" placeholder="Rozbory zápasů s časovými značkami a kresbami">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="field">
+                            <label for="sort_order">Pořadí</label>
+                            <input type="number" id="sort_order" name="sort_order" value="{{ portal.sortOrder ?? 0 }}" min="-999" max="999" step="1" style="max-width:8rem">
+                            <div class="hint">Menší číslo je výš. Při shodě rozhoduje název.</div>
+                        </div>
+                        <label class="check"><input type="checkbox" name="public_access" value="1" {{ portal and portal.publicAccess ? 'checked' }}> <span>Vidí ji každý přihlášený, i bez role (např. veřejná galerie)</span></label>
+                    </div>
+                </div>
+                <button class="btn secondary" type="submit">Uložit rozcestník</button>
+            </form>
+        </div>
+
+        <div class="card">
             <h2>Napojení</h2>
             <div class="table-wrap">
                 <table>

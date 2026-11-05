@@ -6,4 +6,4 @@ nelmio_cors:
         allow_headers: ['Content-Type', 'Authorization']
         max_age: 3600
     paths:
-        '^/(oauth/token|userinfo|\.well-known/)': ~
+        '^/(oauth/token|userinfo|api/|\.well-known/)': ~
