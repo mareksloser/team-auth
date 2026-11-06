@@ -231,6 +231,10 @@ keeping their own copy (e.g. the [club portal](https://github.com/mareksloser/cl
 
 It is meant to be called by the app's backend with the signed-in user's token, so no CORS entry is needed.
 
+`GET /api/directory/users?q=nov` (at least 2 characters, max 20 results) lists club accounts by name or e-mail,
+`{"users": [{"sub", "name", "email", "active"}]}`, so an app can link its own records (players, coaches) to an
+account. Only for superadmins and holders of the role `admin` in the calling application, because it shows e-mails.
+
 ## How it fits together
 
 - `src/Kernel.php` (compiler pass) finds the bundle's services by class and swaps in
